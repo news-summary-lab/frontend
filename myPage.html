@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>마이페이지</title>
+	<style>
+		:root {
+			--bg-primary: #121212;
+			--bg-secondary: #1e1e1e;
+			--bg-tertiary: #2d2d2d;
+			--text-primary: #ffffff;
+			--text-secondary: #e0e0e0;
+			--text-tertiary: #a0a0a0;
+			--accent-primary: #00b0ff;
+			--accent-secondary: #64ffda;
+			--shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+			--transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+		}
+
+		* {
+			margin: 0;
+			padding: 0;
+			box-sizing: border-box;
+		}
+
+		body {
+			font-family: 'Noto Sans KR', sans-serif;
+			background-color: var(--bg-primary);
+			color: var(--text-primary);
+			line-height: 1.6;
+		}
+
+		.container {
+			max-width: 800px;
+			margin: 0 auto;
+			padding: 40px 20px;
+		}
+
+		.mypage-title {
+			font-size: 28px;
+			font-weight: 700;
+			margin-bottom: 30px;
+			text-align: center;
+			color: var(--text-primary);
+		}
+
+		.mypage-card {
+			background-color: var(--bg-secondary);
+			border-radius: 12px;
+			padding: 30px;
+			margin-bottom: 30px;
+			box-shadow: var(--shadow);
+		}
+
+		.section-title {
+			font-size: 20px;
+			font-weight: 600;
+			margin-bottom: 20px;
+			color: var(--accent-primary);
+			display: flex;
+			align-items: center;
+		}
+
+		.section-title i {
+			margin-right: 10px;
+		}
+
+		.input-group {
+			margin-bottom: 20px;
+		}
+
+		.input-label {
+			display: block;
+			margin-bottom: 8px;
+			color: var(--text-secondary);
+			font-size: 14px;
+		}
+
+		.input-field {
+			width: 100%;
+			padding: 12px 15px;
+			background-color: var(--bg-tertiary);
+			border: 1px solid var(--bg-tertiary);
+			border-radius: 6px;
+			color: var(--text-primary);
+			font-size: 16px;
+			transition: var(--transition);
+		}
+
+		.input-field:focus {
+			outline: none;
+			border-color: var(--accent-primary);
+			box-shadow: 0 0 0 2px rgba(0, 176, 255, 0.2);
+		}
+
+		.btn {
+			padding: 10px 20px;
+			border: none;
+			border-radius: 6px;
+			font-size: 16px;
+			font-weight: 500;
+			cursor: pointer;
+			transition: var(--transition);
+		}
+
+		.btn-primary {
+			background-color: var(--accent-primary);
+			color: var(--bg-primary);
+		}
+
+		.btn-primary:hover {
+			background-color: #0091ea;
+		}
+
+		.btn-outline {
+			background-color: transparent;
+			border: 1px solid var(--accent-primary);
+			color: var(--accent-primary);
+		}
+
+		.btn-outline:hover {
+			background-color: rgba(0, 176, 255, 0.1);
+		}
+
+		.keyword-container {
+			display: flex;
+			flex-wrap: wrap;
+			gap: 10px;
+			margin-bottom: 20px;
+		}
+
+		.keyword-tag {
+			display: flex;
+			align-items: center;
+			background-color: var(--bg-tertiary);
+			border-radius: 50px;
+			padding: 8px 15px;
+			font-size: 14px;
+			color: var(--text-secondary);
+			transition: var(--transition);
+		}
+
+		.keyword-tag:hover {
+			background-color: rgba(0, 176, 255, 0.1);
+		}
+
+		.keyword-tag .delete-btn {
+			background: none;
+			border: none;
+			color: var(--text-tertiary);
+			margin-left: 8px;
+			cursor: pointer;
+			font-size: 16px;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			transition: var(--transition);
+		}
+
+		.keyword-tag .delete-btn:hover {
+			color: #ff5252;
+		}
+
+		.keyword-form {
+			display: flex;
+			gap: 10px;
+		}
+
+		.keyword-form .input-field {
+			flex: 1;
+		}
+
+		.error-message {
+			color: #ff5252;
+			font-size: 12px;
+			margin-top: 5px;
+			min-height: 18px;
+		}
+
+		.btn-container {
+			display: flex;
+			justify-content: flex-end;
+			margin-top: 20px;
+		}
+
+		.info-text {
+			color: var(--text-tertiary);
+			font-size: 14px;
+			margin-bottom: 15px;
+		}
+	</style>
+</head>
+
+<body>
+	<div class="container">
+		<h1 class="mypage-title">마이페이지</h1>
+
+		<!-- 사용자 정보 수정 섹션 -->
+		<div class="mypage-card">
+			<h2 class="section-title">
+				<i>👤</i>사용자 정보 수정
+			</h2>
+
+			<form id="user-form" name="userForm" action="/custUpdate" method="post" onsubmit="return false;">
+				<div class="input-group">
+					<label for="nickname" class="input-label">닉네임</label>
+					<input type="text" id="nickname" class="input-field" placeholder="닉네임을 입력하세요" value="사용자123" name="name">
+					<div class="error-message" id="nickname-error"></div>
+				</div>
+
+				<div class="input-group">
+					<label for="new-password" class="input-label">새 비밀번호</label>
+					<input type="password" id="new-password" class="input-field" placeholder="새 비밀번호를 입력하세요" name="password" value="">
+					<div class="error-message" id="new-password-error"></div>
+				</div>
+
+				<div class="input-group">
+					<label for="confirm-password" class="input-label">비밀번호 확인</label>
+					<input type="password" id="confirm-password" class="input-field" placeholder="새 비밀번호를 다시 입력하세요">
+					<div class="error-message" id="confirm-password-error"></div>
+				</div>
+
+				<input type="hidden" name="email" value="">
+				<div class="btn-container">
+					<button class="btn btn-primary" form="userForm" id="custUpdateBtn">정보 수정</button>
+				</div>
+			</form>
+		</div>
+
+		<!-- 관심 키워드 섹션 -->
+		<div class="mypage-card">
+			<h2 class="section-title">
+				<i>🔖</i>관심 키워드
+			</h2>
+
+			<p class="info-text">관심 있는 키워드를 추가해 주세요. (최대 5개)</p>
+
+			<div class="keyword-container" id="keyword-list">
+
+			</div>
+
+			<form id="keyword-form" class="keyword-form" name="keywordForm" method="post" onsubmit="return false;">
+				<input type="hidden" name="email">
+				<input type="text" name="keyword" id="new-keyword" class="input-field" placeholder="새 키워드 입력">
+				<button class="btn btn-outline" form="keywordForm" id="addKeywordBtn">추가</button>
+			</form>
+			<div class="error-message" id="keyword-error"></div>
+		</div>
+	</div>
+
+	<script th:inline="javascript">
+		const addKeywordBtn = document.getElementById('addKeywordBtn');
+		const custUpdateBtn = document.getElementById('custUpdateBtn');
+		//키워드 삭제 함수
+		function removeKeyword(element) {
+			const keywordTag = element.closest('.keyword-tag');
+			//document.getElementById('keyword-list').removeChild(keywordTag);
+			keywordForm.action = '/deleteKeyword'
+			keywordForm.keyword.value = keywordTag.firstChild.textContent.trim();
+			keywordForm.submit();
+		}
+
+
+
+		document.addEventListener('DOMContentLoaded', function () {
+			const userForm = document.getElementById('user-form');
+			const nicknameInput = document.getElementById('nickname');
+			const newPasswordInput = document.getElementById('new-password');
+			const confirmPasswordInput = document.getElementById('confirm-password');
+			const keywordForm = document.getElementById('keyword-form');
+			const newKeywordInput = document.getElementById('new-keyword');
+			const keywordList = document.getElementById('keyword-list');
+			const keywordAdd = document.getElementById('submitAdd');
+
+			// 에러 메시지
+			const nicknameError = document.getElementById('nickname-error');
+			const newPasswordError = document.getElementById('new-password-error');
+			const confirmPasswordError = document.getElementById('confirm-password-error');
+			const keywordError = document.getElementById('keyword-error');
+
+			// 사용자 정보 수정 폼 제출
+			custUpdateBtn.addEventListener('click', (e) => {
+				e.preventDefault();
+
+				// 에러 메시지 초기화
+				nicknameError.textContent = '';
+				newPasswordError.textContent = '';
+				confirmPasswordError.textContent = '';
+
+				// 유효성 검사
+				let contentright = true;
+
+				if (nicknameInput.value.trim() === '') {
+					nicknameError.textContent = '닉네임을 입력해주세요.';
+					contentright = false;
+				}
+
+				if (newPasswordInput.value !== '') {
+					if (newPasswordInput.value.length < 8) {
+						newPasswordError.textContent = '비밀번호는 8자 이상이어야 합니다.';
+						contentright = false;
+					}
+
+					if (newPasswordInput.value !== confirmPasswordInput.value) {
+						confirmPasswordError.textContent = '비밀번호가 일치하지 않습니다.';
+						contentright = false;
+					}
+				}
+
+				if (contentright) {
+					alert('수정되었습니다.');
+					userForm.submit();
+					newPasswordInput.value = '';
+					confirmPasswordInput.value = '';
+				}
+			});
+
+			addKeywordBtn.addEventListener("click", (e) => {
+				e.preventDefault();
+
+				const keyword = keywordForm.keyword.value.trim();
+				keywordError.textContent = '';
+
+				if (keyword === '') {
+					keywordError.textContent = '키워드를 입력해주세요.';
+					return;
+				}
+
+				// 이미 있는 키워드인지 확인
+				const existingKeywords = [];
+				document.querySelectorAll('.keyword-tag').forEach(tag => {
+					const keywordText = tag.textContent.trim().replace('×', '').trim();
+					existingKeywords.push(keywordText);
+				});
+
+				if (existingKeywords.includes(keyword)) {
+					keywordError.textContent = '이미 추가된 키워드입니다.';
+					return;
+				}
+
+				// 최대 키워드 개수 확인
+				if (existingKeywords.length >= 5) {
+					keywordError.textContent = '키워드는 최대 5개까지 추가할 수 있습니다.';
+					return;
+				}
+
+				// 새 키워드 추가
+				keywordForm.action = '/addKeyword';
+				keywordForm.submit();
+			});
+		});
+
+		window.onload = function () {
+			var keywords = /*[[${keyword}]]*/[];
+			keywordForm.email.value = localStorage.getItem("email");
+			userForm.email.value = localStorage.getItem("email");
+			userForm.name.value = /*[[${cust.name}]]*/;
+			
+			if (keywords && keywords.length > 0) {
+				const keywordList = document.getElementById('keyword-list');
+
+				keywords.forEach(keyword => {
+					const newTag = document.createElement('div');
+					newTag.className = 'keyword-tag';
+					newTag.innerHTML = `${keyword}<button type="button" class="delete-btn" onclick="removeKeyword(this)">×</button>`;
+					keywordList.appendChild(newTag);
+				});
+			}
+		}
+	</script>
+</body>
+
+</html>
