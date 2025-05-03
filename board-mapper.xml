@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="Board">
+	<!-- sql 작성 -->
+	<!-- 로그인 확인 -->
+	<select id="goLogin" parameterType="board" resultType="int">
+		SELECT	count(*)
+		  FROM	customer
+		 WHERE	email = #{email} AND password = #{password}
+	</select>
+	
+	<!-- 회원가입 아이디 저장 -->
+	<insert id="goSignUp" parameterType="board">
+		INSERT INTO	customer	(name,
+								email, 
+								password)
+			 VALUES   			(#{name},
+			 					#{email}, 
+								#{password})
+	</insert>
+	
+	<!-- 회원가입 아이디 중복 확인 -->
+	<select id="emailCheck" parameterType="String" resultType="int">
+		SELECT	count(*)
+		  FROM	customer
+		 WHERE	email = #{email}
+	</select>
+	
+	<!-- 회원 정보 조회 -->
+	<select id="custSearch" parameterType="String" resultType="board">
+		SELECT	*
+		  FROM	customer
+		 WHERE	email = #{email}
+	</select>
+	
+	<!-- 키워드 조회 -->
+	<select id="keyword" parameterType="String" resultType="String">
+		SELECT	keyword
+		  FROM	keyword
+		 WHERE	email = #{email}
+	</select>
+	
+	<!-- 키워드 추가 -->
+	<insert id="addKeyword" parameterType="keyword">
+		INSERT INTO	keyword	(email,
+								keyword)
+			 VALUES   			(#{email},
+			 					#{keyword})
+	</insert>
+	
+	<!-- 키워드 삭제 -->
+	<delete id="deleteKeyword" parameterType="keyword">
+	 DELETE FROM	keyword
+		   WHERE	email = #{email} and keyword = #{keyword}
+	</delete>
+	
+	<!-- 회원 정보 수정하기 -->
+	<update id="custUpdate" parameterType="board">
+		UPDATE 	customer
+		   SET	name = #{name},
+				password = #{password}
+		 WHERE	email = #{email}
+	</update>
+</mapper>
