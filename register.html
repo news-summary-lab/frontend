@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>-- 회원가입 --</title>
+</head>
+<body>
+	<a href="/">HOME</a>
+	<form action="/register" method="post" name="registerForm">
+		아이디: <input type="text" name="custid"> 8~15자리
+		<input type="button" value="확인" onclick="checkId()">
+		<br>
+		비밀번호: <input type="password" name="password"> 8~15자리
+		<br>
+		비밀번호 확인: <input type="password" name="passCheck">
+		<br>
+		<input type="button" value="회원가입" onclick="saveRegister()">
+	</form>
+</body>
+<script th:inline="javascript">
+	var check = false;
+	const saveRegister = () => {
+		if(check){
+			alert("아이디 중복을 확인해주세요.");
+			return;
+		} else if(registerForm.password.value.length == 0){
+			alert("비밀번호를 입력하세요.");
+			return;
+		} else if(registerForm.password.value == registerForm.passCheck.value){
+			alert("비밀번호가 일치하지 않습니다.");
+			return;
+		}
+		registerForm.submit();
+	}
+	const checkId = () => {
+		if(registerForm.custid.value.length < 8 || registerForm.custid.value.length > 15){
+			alert("아이디를 8~15자리로 입력하세요.");
+			return;
+		} else {
+			window.open("/custidCheck?custid=" + encodeURIComponent(registerForm.custid.value), 'width=400, height=200');
+			return;
+		}
+	}
+</script>
+</html>

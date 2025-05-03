@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+</head>
+<body>
+	<form name="form" action="/myPage" method="post">
+		<input type="hidden" name="email" value="">
+	</form>
+</body>
+<script th:inline="javascript">
+	form.email.value = localStorage.getItem('email');
+	form.submit();
+</script>
+</html>
