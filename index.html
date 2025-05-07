@@ -530,6 +530,13 @@
             textarea.addEventListener('blur', function() {
                 this.parentElement.classList.remove('focused');
             });
+
+            textarea.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault(); // 기본 Enter 동작 방지
+                    sendArticle(); // 메시지 전송 함수 호출
+                }
+            });
         }
 
         // 메시지 추가 함수
