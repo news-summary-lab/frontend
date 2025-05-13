@@ -540,7 +540,7 @@
         }
 
         // 메시지 추가 함수
-        function addMessage(isUser, content) {
+        function addMessage(isUser, content, isFollowUp = false) {
             const chatView = document.getElementById('chat-view');
             const welcomeView = document.getElementById('welcome-view');
             const inputContainer = document.getElementById('input-container');
@@ -558,11 +558,13 @@
             const messageDiv = document.createElement('div');
             messageDiv.className = `message ${isUser ? 'user-message' : 'bot-message'}`;
             
-            if (!isUser) {
+            if (!isUser && !isFollowUp) {
                 const avatar = document.createElement('div');
                 avatar.className = 'avatar bot-avatar';
                 avatar.innerHTML = '<i class="fas fa-robot"></i>';
                 messageDiv.appendChild(avatar);
+            } else if (!isUser && isFollowUp) {
+                messageDiv.style.marginLeft = '52px';
             }
             
             const messageContent = document.createElement('div');
@@ -680,6 +682,8 @@
             
             document.getElementById('title-home').addEventListener('click', resetToWelcomeScreen);
             
+            addCustomStyles();
+
             try {
                 const res = await fetch('/api/summaries/history');
                 const json = await res.json();
@@ -690,7 +694,21 @@
                 console.error("대화 불러오기 실패", err);
             }
         });
-        
+
+        function addCustomStyles() {
+            const style = document.createElement('style');
+            style.textContent = `
+                .message {
+                    margin-bottom: 0.5rem; /* 메시지 간격 줄이기 (원래 1.5rem) */
+                }
+                
+                .bot-message + .bot-message {
+                    margin-top: -0.3rem; /* 연속된 봇 메시지 간 더 좁은 간격 */
+                }
+            `;
+            document.head.appendChild(style);
+        }
+
         async function sendArticle() {
             const articleText = document.getElementById('articleText').value;
             if (!articleText.trim()) return;
@@ -722,8 +740,22 @@
 
                 conversation.push({ prompt: articleText, response: data.summary });
                 
-                // 봇 응답 메시지 표시
-                addMessage(false, data.summary);
+                let summary = data.summary;
+                
+                // 따옴표 제거
+                summary = summary.replace(/[""]/g, '');
+                
+                // **로 둘러싸인 내용 제거 (** 포함)
+                summary = summary.replace(/\*\*.*?\*\*/g, '');
+
+                // 단락 나누기 (\n\n 기준)
+                const paragraphs = summary.split('\n\n');
+                
+                paragraphs.forEach((paragraph, index) => {
+                    if (paragraph.trim()) {
+                    addMessage(false, paragraph.trim(), index > 0); // index > 0이면 이어지는 메시지
+                    }
+                });
             } catch (error) {
                 console.error('Error:', error);
                 
