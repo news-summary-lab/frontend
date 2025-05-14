@@ -749,7 +749,7 @@
                 summary = summary.replace(/\*\*.*?\*\*/g, '');
 
                 // 단락 나누기 (\n\n 기준)
-                const paragraphs = summary.split('\n\n');
+                const paragraphs = summary.split(/\n+/);
                 
                 paragraphs.forEach((paragraph, index) => {
                     if (paragraph.trim()) {
