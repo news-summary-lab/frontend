@@ -2,6 +2,10 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
+
+    <meta name="_csrf" th:content="${_csrf.token}" />
+    <meta name="_csrf_header" th:content="${_csrf.headerName}" />
+    
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>뉴스 요약 봇</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
@@ -712,18 +716,26 @@
         async function sendArticle() {
             const articleText = document.getElementById('articleText').value;
             if (!articleText.trim()) return;
-            
+
             // 사용자 메시지 표시
             addMessage(true, articleText);
             document.getElementById('articleText').value = '';
             document.getElementById('articleText').style.height = 'auto';
-            
+
             const typingIndicator = showTypingIndicator();
-            
+
             try {
+                // ✅ CSRF 토큰과 헤더 이름 가져오기
+                const csrfToken = document.querySelector('meta[name="_csrf"]').getAttribute('content');
+                const csrfHeader = document.querySelector('meta[name="_csrf_header"]').getAttribute('content');
+
+                // ✅ fetch 요청에 CSRF 토큰 포함
                 const response = await fetch('/api/summaries', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: {
+                        'Content-Type': 'application/json',
+                        [csrfHeader]: csrfToken  // 동적으로 CSRF 헤더 키 사용
+                    },
                     body: JSON.stringify({ text: articleText })
                 });
 
@@ -739,30 +751,31 @@
                 }
 
                 conversation.push({ prompt: articleText, response: data.summary });
-                
+
                 let summary = data.summary;
-                
+
                 // 따옴표 제거
                 summary = summary.replace(/[""]/g, '');
-                
+
                 // **로 둘러싸인 내용 제거 (** 포함)
                 summary = summary.replace(/\*\*.*?\*\*/g, '');
 
                 // 단락 나누기 (\n\n 기준)
                 const paragraphs = summary.split(/\n+/);
-                
+
                 paragraphs.forEach((paragraph, index) => {
                     if (paragraph.trim()) {
-                    addMessage(false, paragraph.trim(), index > 0); // index > 0이면 이어지는 메시지
+                        addMessage(false, paragraph.trim(), index > 0); // index > 0이면 이어지는 메시지
                     }
                 });
+
             } catch (error) {
                 console.error('Error:', error);
-                
+
                 if (typingIndicator && typingIndicator.parentNode) {
                     typingIndicator.parentNode.removeChild(typingIndicator);
                 }
-                
+
                 addMessage(false, '요약 중 오류가 발생했습니다: ' + error.message);
             }
         }
