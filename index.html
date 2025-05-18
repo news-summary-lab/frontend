@@ -2,6 +2,10 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
+
+    <meta name="_csrf" th:content="${_csrf.token}" />
+    <meta name="_csrf_header" th:content="${_csrf.headerName}" />
+    
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>뉴스 요약 봇</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
@@ -25,14 +29,15 @@
             --shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
             --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
         }
-        
+                
         body {
             background-color: var(--bg-primary);
             color: var(--text-primary);
-            height: 100vh;
+            min-height: 100vh;
             display: flex;
             flex-direction: column;
             transition: var(--transition);
+            overflow-y: auto; /* 스크롤 허용 */
         }
         
         .header {
@@ -81,6 +86,7 @@
             height: calc(100vh - 70px);
             position: relative;
             transition: var(--transition);
+            overflow-y: auto; /* 이 줄 추가 */
         }
         
         .chat-container {
@@ -113,6 +119,7 @@
             align-items: center;
             justify-content: center;
             height: 100%;
+            min-height: 90vh; /* 이 줄만 추가 - 스크롤 가능하도록 함 */
             text-align: center;
             margin-bottom: 30px;
             padding: 0 2rem;
@@ -184,7 +191,7 @@
             transform: translateY(-50%);
         }
         
-        .chat-input {
+        .articleText {
             flex: 1;
             padding: 1rem 3rem 1rem 1rem;
             border: 1px solid var(--bg-tertiary);
@@ -201,11 +208,11 @@
             overflow: hidden;
         }
         
-        .chat-input::placeholder {
+        .articleText::placeholder {
             color: var(--text-tertiary);
         }
         
-        .chat-input:focus {
+        .articleText:focus {
             border-color: var(--accent-primary);
             box-shadow: 0 0 0 2px rgba(0, 176, 255, 0.2);
         }
@@ -449,6 +456,186 @@
                 font-size: 3rem;
             }
         }
+
+
+
+        /* 뉴스 추천 섹션 스타일 */
+        .news-recommendations {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            min-height: 100vh;
+            background-color: var(--bg-primary);
+            padding: 2rem 1rem;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+            z-index: 10;
+        }
+
+        .news-recommendations.visible {
+            opacity: 1;
+        }
+
+        .recommendations-title {
+            text-align: center;
+            color: var(--accent-primary);
+            font-size: 1.8rem;
+            margin-bottom: 2rem;
+            animation: fadeIn 1s ease;
+        }
+
+        .recommendations-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: repeat(2, 1fr);
+            gap: 1.5rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .news-category {
+            background-color: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 1rem;
+            box-shadow: var(--shadow);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            height: 100%;
+            min-height: 300px;
+            display: flex;
+            flex-direction: column;
+            animation: fadeInUp 0.6s calc(var(--delay) * 0.15s) both;
+        }
+
+        .news-category:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.5);
+        }
+
+        .category-title {
+            color: var(--accent-primary);
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--bg-tertiary);
+        }
+
+        .news-items {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
+            overflow-y: auto;
+            scrollbar-width: thin;
+            scrollbar-color: var(--accent-primary) var(--bg-secondary);
+        }
+
+        .news-items::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .news-items::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+
+        .news-items::-webkit-scrollbar-thumb {
+            background-color: var(--accent-primary);
+            border-radius: 3px;
+        }
+
+        .news-item {
+            background-color: var(--bg-tertiary);
+            border-radius: 8px;
+            padding: 0.8rem;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .news-item:hover {
+            background-color: var(--accent-primary);
+            color: var(--bg-primary);
+        }
+
+        .news-item-title {
+            font-weight: bold;
+            margin-bottom: 0.3rem;
+            font-size: 0.9rem;
+        }
+
+        .news-item-summary {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            max-height: 2.6em; /* 2줄 높이 (line-height 1.3 * 2) */
+            overflow: hidden;
+            text-overflow: ellipsis;
+            line-height: 1.3;
+            position: relative;
+        }
+
+        /* 여러 줄 말줄임표 효과 적용 */
+        .news-item-summary::after {
+            content: '...';
+            position: absolute;
+            right: 0;
+            bottom: 0;
+            padding-left: 3px;
+            background-color: var(--bg-tertiary);
+        }
+
+        .news-item:hover .news-item-summary::after {
+            background-color: var(--accent-primary);
+        }
+
+        .news-item:hover .news-item-summary {
+            color: var(--bg-secondary);
+        }
+
+        /* 스크롤 인디케이터 스타일 */
+        .scroll-indicator {
+            position: absolute;
+            bottom: 30px;
+            transform: translateX(-50%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            animation: bounce 2s infinite;
+        }
+
+        .arrow-down {
+            margin-top: 8px;
+            font-size: 1.2rem;
+            color: var(--accent-primary);
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% {
+                transform: translateY(0);
+            }
+            40% {
+                transform: translateY(-10px);
+            }
+            60% {
+                transform: translateY(-5px);
+            }
+        }
+
+        /* 반응형 디자인 업데이트 */
+        @media (max-width: 992px) {
+            .recommendations-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .recommendations-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .news-category {
+                min-height: 250px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -485,13 +672,56 @@
                 <div class="tag" style="--delay: 5;">테크 트렌드</div>
                 <div class="tag" style="--delay: 6;">글로벌 이슈</div>
             </div>
+
+
+            <!-- welcome-view 내부 tags-container 다음에 추가 -->
+            <div class="scroll-indicator">
+                <p>뉴스 추천 페이지</p>
+                <div class="arrow-down">
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+            </div>
         </div>
-        
+
         <div id="chat-view" class="chat-container" style="display: none;"></div>
+
+
+        <!-- welcome-view와 chat-view 다음, input-container 전에 추가 -->
+        <div id="news-recommendations" class="news-recommendations" style="display: none;">
+            <h2 class="recommendations-title">오늘의 추천 뉴스</h2>
+            <div class="recommendations-grid">
+                <div class="news-category" data-category="정치">
+                    <h3 class="category-title">정치</h3>
+                    <div class="news-items"></div>
+                </div>
+                <div class="news-category" data-category="경제">
+                    <h3 class="category-title">경제</h3>
+                    <div class="news-items"></div>
+                </div>
+                <div class="news-category" data-category="사회">
+                    <h3 class="category-title">사회</h3>
+                    <div class="news-items"></div>
+                </div>
+                <div class="news-category" data-category="국제">
+                    <h3 class="category-title">국제</h3>
+                    <div class="news-items"></div>
+                </div>
+                <div class="news-category" data-category="기술/IT">
+                    <h3 class="category-title">기술/IT</h3>
+                    <div class="news-items"></div>
+                </div>
+                <div class="news-category" data-category="예술">
+                    <h3 class="category-title">예술</h3>
+                    <div class="news-items"></div>
+                </div>
+            </div>
+        </div>
+
+
         
         <div id="input-container" class="input-container center-input" contenteditable="true">
-            <textarea id="chat-input" class="chat-input" placeholder="뉴스 주제나 URL을 입력하세요..." rows="1"></textarea>
-            <button id="send-button" class="send-button">
+            <textarea id="articleText" class="articleText" placeholder="뉴스 주제나 URL을 입력하세요..." rows="1"></textarea>
+            <button id="send-button" class="send-button" onclick="sendArticle()">
                 <i class="fas fa-paper-plane"></i>
             </button>
         </div>
@@ -499,33 +729,30 @@
     
     <script>
         const state = {
-            apiKey: '', //여기에 api키 입력
             sendingMessage: false,
             typingIndicator: null,
             messages: [],
             hasConversationStarted: false
         };
-        
+
         // 현재 날짜 표시
         function displayDate() {
             const date = new Date();
             const options = { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' };
             document.getElementById('date-display').textContent = date.toLocaleDateString('ko-KR', options);
         }
-        
+
         // 텍스트 영역 자동 높이 조절
         function autoResizeTextarea() {
-            const textarea = document.getElementById('chat-input');
+            const textarea = document.getElementById('articleText');
             textarea.addEventListener('input', function() {
                 this.style.height = 'auto';
                 this.style.height = (this.scrollHeight) + 'px';
-                // 최대 높이 제한
                 if (this.scrollHeight > 200) {
                     this.style.height = '200px';
                 }
             });
             
-            // 포커스 이벤트 추가
             textarea.addEventListener('focus', function() {
                 this.parentElement.classList.add('focused');
             });
@@ -533,10 +760,17 @@
             textarea.addEventListener('blur', function() {
                 this.parentElement.classList.remove('focused');
             });
+
+            textarea.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    sendArticle();
+                }
+            });
         }
-        
+
         // 메시지 추가 함수
-        function addMessage(content, isUser) {
+        function addMessage(isUser, content, isFollowUp = false) {
             const chatView = document.getElementById('chat-view');
             const welcomeView = document.getElementById('welcome-view');
             const inputContainer = document.getElementById('input-container');
@@ -554,11 +788,13 @@
             const messageDiv = document.createElement('div');
             messageDiv.className = `message ${isUser ? 'user-message' : 'bot-message'}`;
             
-            if (!isUser) {
+            if (!isUser && !isFollowUp) {
                 const avatar = document.createElement('div');
                 avatar.className = 'avatar bot-avatar';
                 avatar.innerHTML = '<i class="fas fa-robot"></i>';
                 messageDiv.appendChild(avatar);
+            } else if (!isUser && isFollowUp) {
+                messageDiv.style.marginLeft = '52px';
             }
             
             const messageContent = document.createElement('div');
@@ -580,14 +816,14 @@
                     behavior: 'smooth'
                 });
             }, 200);
-    
+
             // 상태 업데이트
             state.messages.push({
                 content: content,
                 isUser: isUser
             });
         }
-        
+
         // 타이핑 인디케이터 표시 함수
         function showTypingIndicator() {
             const chatView = document.getElementById('chat-view');
@@ -612,101 +848,6 @@
             });
             
             return typingDiv;
-        }
-        
-        // Gemini API 호출 함수
-        async function callGeminiAPI(prompt) {
-            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${state.apiKey}`;
-            
-            // 뉴스 요약에 맞는 프롬프트 가공
-            const requestPrompt = `다음 주제에 대한 최신 뉴스를 간결하게 요약해주세요: "${prompt}". 3-4문장으로 핵심만 알려주세요. 한국어로 답변해주세요.`;
-            
-            try {
-                const response = await fetch(url, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        contents: [{
-                            parts: [{
-                                text: requestPrompt
-                            }]
-                        }]
-                    })
-                });
-                
-                if (!response.ok) {
-                    throw new Error(`API 응답 오류: ${response.status}`);
-                }
-                
-                const data = await response.json();
-                
-                // API 응답에서 텍스트 추출
-                if (data.candidates && data.candidates[0] && data.candidates[0].content && 
-                    data.candidates[0].content.parts && data.candidates[0].content.parts[0]) {
-                    return data.candidates[0].content.parts[0].text;
-                } else {
-                    return "죄송합니다. 응답을 받지 못했습니다. 잠시 후 다시 시도해주세요.";
-                }
-            } catch (error) {
-                console.error("API 호출 오류:", error);
-                return "API 연결 중 오류가 발생했습니다. 네트워크 연결을 확인하고 다시 시도해주세요.";
-            }
-        }
-        
-        // 메시지 전송 처리
-        async function handleSendMessage() {                                                                                          
-            const input = document.getElementById('chat-input');
-            const message = input.value.trim();
-            const sendButton = document.getElementById('send-button');
-            
-            if (message && !state.sendingMessage) {
-                
-                state.sendingMessage = true;
-                sendButton.disabled = true;
-                sendButton.style.opacity = 0.5;
-            
-                // 사용자 메시지 표시
-                addMessage(message, true);
-                input.value = '';
-                input.style.height = 'auto';
-                
-                // 타이핑 인디케이터 표시
-                state.typingIndicator = showTypingIndicator();
-                
-                try {
-                    // 응답에 약간의 지연을 추가하여 자연스러운 느낌 부여
-                    await new Promise(resolve => setTimeout(resolve, 1000));
-                    
-                    // Gemini API 호출
-                    const botResponse = await callGeminiAPI(message);
-                    
-                    // 타이핑 인디케이터 제거
-                    if (state.typingIndicator) {
-                        state.typingIndicator.remove();
-                        state.typingIndicator = null;
-                    }
-                    
-                    // 응답 표시
-                    addMessage(botResponse, false);
-                } catch (error) {
-                    console.error("메시지 처리 오류:", error);
-                    
-                    // 타이핑 인디케이터 제거
-                    if (state.typingIndicator) {
-                        state.typingIndicator.remove();
-                        state.typingIndicator = null;
-                    }
-                    
-                    addMessage("죄송합니다. 뉴스 요약 중 오류가 발생했습니다. 다시 시도해주세요.", false);
-                } finally {
-                    // 상태 초기화
-                    state.sendingMessage = false;
-                    sendButton.disabled = false;
-                    sendButton.style.opacity = 1;
-                }
-            }
         }
         
         // 초기 화면으로 돌아가는 함수
@@ -737,57 +878,306 @@
                 }, 100);
             }, 300);
         }
-        
+
         // 태그 클릭 이벤트 처리
         function setupTagEvents() {
             const tags = document.querySelectorAll('.tag');
             tags.forEach(tag => {
                 tag.addEventListener('click', function() {
                     const query = this.textContent;
-                    document.getElementById('chat-input').value = query;
-                    handleSendMessage();
+                    document.getElementById('articleText').value = query;
+                    sendArticle();
                 });
             });
         }
-        
+
         // 카테고리 클릭 이벤트 처리
         function setupCategoryEvents() {
             const categories = document.querySelectorAll('.category-chip');
             categories.forEach(category => {
                 category.addEventListener('click', function() {
-                    // 현재 활성화된 카테고리 비활성화
                     document.querySelector('.category-chip.active').classList.remove('active');
-                    // 클릭한 카테고리 활성화
                     this.classList.add('active');
                 });
             });
         }
 
-        // 페이지 로드 시 초기화
-        window.onload = function() {
+        let conversation = [];
+
+        document.addEventListener('DOMContentLoaded', async () => {
             displayDate();
             autoResizeTextarea();
             setupTagEvents();
             setupCategoryEvents();
             
-            // 전송 버튼 클릭 이벤트
-            document.getElementById('send-button').addEventListener('click', handleSendMessage);
+            document.getElementById('title-home').addEventListener('click', resetToWelcomeScreen);
             
-            // 엔터 키 입력 이벤트
-            document.getElementById('chat-input').addEventListener('keydown', function(e) {
-                if (e.key === 'Enter' && !e.shiftKey) {
-                    e.preventDefault();
-                    handleSendMessage();
+            addCustomStyles();
+            // 뉴스 추천 시스템 초기화
+            initNewsRecommendations();
+
+            // 스크롤 이벤트 처리
+            setupScrollHandling();
+
+            // 초기 상태에서 뉴스 추천 섹션은 숨김 상태로 설정
+            const newsRecommendations = document.getElementById('news-recommendations');
+            if (newsRecommendations) {
+                newsRecommendations.style.display = 'none';
+            }
+
+            try {
+                const res = await fetch('/api/summaries/history');
+                const json = await res.json();
+                console.log("대화 기록 응답:", json);
+                conversation = Array.isArray(json) ? json : [];
+                updateConversation();
+            } catch (err) {
+                console.error("대화 불러오기 실패", err);
+            }
+        });
+
+        function addCustomStyles() {
+            const style = document.createElement('style');
+            style.textContent = `
+                .message {
+                    margin-bottom: 0.5rem; /* 메시지 간격 줄이기 (원래 1.5rem) */
                 }
-            });
-            
-            // 타이틀 클릭 이벤트 - 초기 화면으로 돌아가기
-            document.getElementById('title-home').addEventListener('click', function() {
-                if (state.hasConversationStarted) {
-                    resetToWelcomeScreen();
+                
+                .bot-message + .bot-message {
+                    margin-top: -0.3rem; /* 연속된 봇 메시지 간 더 좁은 간격 */
                 }
+            `;
+            document.head.appendChild(style);
+        }
+
+        async function sendArticle() {
+            const articleText = document.getElementById('articleText').value;
+            if (!articleText.trim()) return;
+
+            // 사용자 메시지 표시
+            addMessage(true, articleText);
+            document.getElementById('articleText').value = '';
+            document.getElementById('articleText').style.height = 'auto';
+
+            const typingIndicator = showTypingIndicator();
+
+            try {
+                // ✅ CSRF 토큰과 헤더 이름 가져오기
+                const csrfToken = document.querySelector('meta[name="_csrf"]').getAttribute('content');
+                const csrfHeader = document.querySelector('meta[name="_csrf_header"]').getAttribute('content');
+
+                // ✅ fetch 요청에 CSRF 토큰 포함
+                const response = await fetch('/api/summaries', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        [csrfHeader]: csrfToken  // 동적으로 CSRF 헤더 키 사용
+                    },
+                    body: JSON.stringify({ text: articleText })
+                });
+
+                const data = await response.json();
+                console.log("요약 응답:", data);
+
+                if (typingIndicator && typingIndicator.parentNode) {
+                    typingIndicator.parentNode.removeChild(typingIndicator);
+                }
+
+                if (!response.ok) {
+                    throw new Error(data.message || '요약 요청 중 오류 발생');
+                }
+
+                conversation.push({ prompt: articleText, response: data.summary });
+
+                let summary = data.summary;
+
+                // 따옴표 제거
+                summary = summary.replace(/[""]/g, '');
+
+                // **로 둘러싸인 내용 제거 (** 포함)
+                summary = summary.replace(/\*\*.*?\*\*/g, '');
+
+                // 단락 나누기 (\n\n 기준)
+                const paragraphs = summary.split(/\n+/);
+
+                paragraphs.forEach((paragraph, index) => {
+                    if (paragraph.trim()) {
+                        addMessage(false, paragraph.trim(), index > 0); // index > 0이면 이어지는 메시지
+                    }
+                });
+
+            } catch (error) {
+                console.error('Error:', error);
+
+                if (typingIndicator && typingIndicator.parentNode) {
+                    typingIndicator.parentNode.removeChild(typingIndicator);
+                }
+
+                addMessage(false, '요약 중 오류가 발생했습니다: ' + error.message);
+            }
+        }
+
+        function updateConversation() {
+            conversation.forEach(entry => {
+                addMessage(true, entry.prompt);
+                addMessage(false, entry.response);
             });
+        }
+
+
+
+
+        // 더미 뉴스 데이터
+        const dummyNews = {
+            '정치': [
+                { title: '국회, 새로운 예산안 통과 합의', summary: '여야는 내년도 예산안에 대한 협상을 타결하고 본회의 통과를 앞두고 있습니다.' },
+                { title: '대통령, 신임 장관 인선 발표', summary: '오늘 청와대에서 새로운 국방부 장관과 외교부 장관 인선이 발표되었습니다.' },
+                { title: '야당, 정부 정책 비판 성명 발표', summary: '야당은 최근 정부의 경제 정책에 대한 비판적 입장을 담은 성명을 발표했습니다.' }
+            ],
+            '경제': [
+                { title: '한국은행, 기준금리 동결 결정', summary: '한국은행 금융통화위원회는 현재의 기준금리를 유지하기로 결정했습니다.' },
+                { title: '주요 기업 실적 전망 상향 조정', summary: '올해 4분기 주요 기업들의 실적 전망이 시장 예상치를 상회할 것으로 전망됩니다.' },
+                { title: '원/달러 환율, 3개월 만에 최저치', summary: '원/달러 환율이 글로벌 달러 약세 영향으로 최근 3개월 중 최저치를 기록했습니다.' }
+            ],
+            '사회': [
+                { title: '전국 대학 입시 원서 접수 시작', summary: '내년도 대학 입학을 위한 수시모집 원서 접수가 오늘부터 시작되었습니다.' },
+                { title: '서울 지하철 무인화 시스템 도입 확대', summary: '서울교통공사는 내년부터 지하철 무인 운영 시스템을 확대 도입할 계획입니다.' },
+                { title: '전국 아파트 가격 상승세 둔화', summary: '부동산 통계에 따르면 최근 전국 아파트 가격 상승세가 둔화되고 있는 것으로 나타났습니다.' }
+            ],
+            '국제': [
+                { title: '미-중 정상회담 개최 예정', summary: '미국과 중국 정상이 다음 달 아시아 정상회의에서 양자 회담을 가질 예정입니다.' },
+                { title: 'EU, 새로운 기후변화 대응책 발표', summary: '유럽연합은 2035년까지의 탄소중립 목표 달성을 위한 새로운 정책을 발표했습니다.' },
+                { title: '일본, 경기 회복세 뚜렷', summary: '일본 경제가 코로나19 이후 회복세를 보이며 수출과 내수가 모두 개선되고 있습니다.' }
+            ],
+            '기술/IT': [
+                { title: '삼성전자, 차세대 반도체 개발 성공', summary: '삼성전자가 3나노 공정의 차세대 반도체 개발에 성공했다고 발표했습니다.' },
+                { title: '인공지능 윤리 가이드라인 발표', summary: '과학기술정보통신부는 인공지능 개발 및 활용을 위한 윤리 가이드라인을 발표했습니다.' },
+                { title: '국내 5G 가입자 2000만 돌파', summary: '국내 5G 서비스 가입자가 출시 3년 만에 2000만 명을 돌파했습니다.' }
+            ],
+            '예술': [
+                { title: '국립현대미술관, 가을 특별전 개최', summary: '국립현대미술관은 다음 달부터 한국 현대미술 50년을 조망하는 특별전을 개최합니다.' },
+                { title: '유명 뮤지컬 레미제라블 내한 공연', summary: '세계적인 뮤지컬 레미제라블이 10년 만에 한국 공연을 개최합니다.' },
+                { title: '한국영화 기생충, 해외 영화제 수상', summary: '봉준호 감독의 기생충이 또 다른 해외 영화제에서 수상의 영예를 안았습니다.' }
+            ]
         };
+
+        // 뉴스 추천 섹션 초기화
+        function initNewsRecommendations() {
+            const categories = document.querySelectorAll('.news-category');
+            
+            categories.forEach((category, index) => {
+                category.style.setProperty('--delay', index + 1);
+                const categoryName = category.dataset.category;
+                const newsItems = category.querySelector('.news-items');
+                
+                // 더미 뉴스 데이터 추가
+                if (dummyNews[categoryName]) {
+                    dummyNews[categoryName].forEach(news => {
+                        const newsItem = document.createElement('div');
+                        newsItem.className = 'news-item';
+                        newsItem.innerHTML = `
+                            <div class="news-item-title">${news.title}</div>
+                            <div class="news-item-summary">${news.summary}</div>
+                        `;
+                        
+                        // 뉴스 아이템 클릭 시 해당 내용을 입력창에 자동 입력
+                        newsItem.addEventListener('click', () => {
+                            document.getElementById('articleText').value = news.title;
+                            toggleNewsRecommendations(false);
+                            setTimeout(() => {
+                                sendArticle();
+                            }, 300);
+                        });
+                        
+                        newsItems.appendChild(newsItem);
+                    });
+                }
+            });
+        }
+
+        // 스크롤 처리 설정
+        function setupScrollHandling() {
+            let isNewsVisible = false;
+            let isTransitioning = false; // 전환 중인지 추적하는 플래그 추가
+            const welcomeView = document.getElementById('welcome-view');
+            const newsRecommendations = document.getElementById('news-recommendations');
+            
+            // 스크롤 이벤트 디바운싱을 위한 변수
+            let scrollTimeout;
+            
+            window.addEventListener('scroll', function() {
+                // 이미 전환 중이면 무시
+                if (isTransitioning) return;
+                
+                // 디바운싱 적용
+                clearTimeout(scrollTimeout);
+                scrollTimeout = setTimeout(function() {
+                    // state 객체가 없거나 hasConversationStarted가 false일 때만 동작
+                    if (!state || !state.hasConversationStarted) {
+                        // 임계값을 더 멀리 설정 (100px -> 200px, 50px -> 20px)
+                        if (window.scrollY > 20 && !isNewsVisible) {
+                            isTransitioning = true; // 전환 시작
+                            console.log('뉴스 추천 표시');
+                            toggleNewsRecommendations(true);
+                            isNewsVisible = true;
+                            
+                            // 전환 완료 후 플래그 리셋
+                            setTimeout(() => {
+                                isTransitioning = false;
+                            }, 600); // 애니메이션 완료 시간보다 길게
+                            
+                        } else if (window.scrollY < 20 && isNewsVisible) {
+                            isTransitioning = true; // 전환 시작
+                            console.log('뉴스 추천 숨김');
+                            toggleNewsRecommendations(false);
+                            isNewsVisible = false;
+                            
+                            // 전환 완료 후 플래그 리셋
+                            setTimeout(() => {
+                                isTransitioning = false;
+                            }, 600); // 애니메이션 완료 시간보다 길게
+                        }
+                    }
+                }, 100); // 100ms 디바운싱
+            });
+        }
+
+        // 뉴스 추천 화면 토글
+        function toggleNewsRecommendations(show) {
+            const welcomeView = document.getElementById('welcome-view');
+            const newsRecommendations = document.getElementById('news-recommendations');
+            const inputContainer = document.getElementById('input-container');
+            
+            console.log('토글 함수 실행:', show); // 디버깅용
+            
+            if (show) {
+                // 환영 화면 숨기기
+                welcomeView.style.opacity = '0';
+                setTimeout(() => {
+                    welcomeView.style.display = 'none';
+                    
+                    // 뉴스 추천 화면 표시
+                    newsRecommendations.style.display = 'block';
+                    document.body.style.overflow = 'auto'; // 스크롤 허용
+                    
+                    setTimeout(() => {
+                        newsRecommendations.classList.add('visible');
+                    }, 50);
+                }, 300);
+            } else {
+                // 뉴스 추천 화면 숨기기
+                newsRecommendations.classList.remove('visible');
+                setTimeout(() => {
+                    newsRecommendations.style.display = 'none';
+                    
+                    // 환영 화면 표시
+                    welcomeView.style.display = 'flex';
+                    setTimeout(() => {
+                        welcomeView.style.opacity = '1';
+                    }, 50);
+                }, 300);
+            }
+        }
     </script>
 </body>
 </html>
