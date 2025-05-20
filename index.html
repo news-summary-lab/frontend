@@ -33,11 +33,10 @@
         body {
             background-color: var(--bg-primary);
             color: var(--text-primary);
-            min-height: 100vh;
+            height: 100vh;
             display: flex;
             flex-direction: column;
             transition: var(--transition);
-            overflow-y: auto; /* 스크롤 허용 */
         }
         
         .header {
@@ -49,6 +48,10 @@
             align-items: center;
             transition: var(--transition);
             z-index: 100;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
         }
         
         .header h1 {
@@ -74,6 +77,10 @@
             align-items: center;
             color: var(--text-tertiary);
         }
+
+        #user {
+            margin-left: 10px;
+        }
         
         .main-container {
             flex: 1;
@@ -82,11 +89,10 @@
             padding: 1rem;
             width: 100%;
             max-width: 900px;
-            margin: 0 auto;
+            margin: 70px auto 0;
             height: calc(100vh - 70px);
             position: relative;
             transition: var(--transition);
-            overflow-y: auto; /* 이 줄 추가 */
         }
         
         .chat-container {
@@ -119,7 +125,7 @@
             align-items: center;
             justify-content: center;
             height: 100%;
-            min-height: 90vh; /* 이 줄만 추가 - 스크롤 가능하도록 함 */
+            min-height: calc(90vh - 70px);
             text-align: center;
             margin-bottom: 30px;
             padding: 0 2rem;
@@ -465,8 +471,8 @@
             top: 0;
             left: 0;
             width: 100%;
-            min-height: 100vh;
             background-color: var(--bg-primary);
+            padding-top: 90px;
             padding: 2rem 1rem;
             opacity: 0;
             transition: opacity 0.5s ease;
@@ -494,6 +500,7 @@
             margin: 0 auto;
         }
 
+
         .news-category {
             background-color: var(--bg-secondary);
             border-radius: 12px;
@@ -505,11 +512,58 @@
             display: flex;
             flex-direction: column;
             animation: fadeInUp 0.6s calc(var(--delay) * 0.15s) both;
+            position: relative;
+            overflow: hidden;
         }
-
         .news-category:hover {
             transform: translateY(-5px);
             box-shadow: 0 8px 16px rgba(0, 0, 0, 0.5);
+        }
+
+        .news-category::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-position: left top;
+            background-size: cover;
+            background-repeat: no-repeat;
+            opacity: 0.23;
+            z-index: 0;
+            mask-image: linear-gradient(to right, rgba(0,0,0,0.8) 30%, rgba(0,0,0,0) 70%);
+            -webkit-mask-image: linear-gradient(to left, rgba(0,0,0,0.8) 30%, rgba(0,0,0,0) 80%);
+        }
+        
+        .news-category[data-category="정치"]::before {
+            background-image: url('https://images.pexels.com/photos/1550337/pexels-photo-1550337.jpeg');
+            background-color: rgba(72, 105, 196, 0.7);
+        }
+        
+        .news-category[data-category="경제"]::before {
+            background-image: url('https://images.pexels.com/photos/210607/pexels-photo-210607.jpeg');
+            background-color: rgba(49, 151, 108, 0.7);
+        }
+        
+        .news-category[data-category="사회"]::before {
+            background-image: url('https://images.pexels.com/photos/1634278/pexels-photo-1634278.jpeg');
+            background-color: rgba(191, 87, 0, 0.7);
+        }
+        
+        .news-category[data-category="국제"]::before {
+            background-image: url('https://images.pexels.com/photos/335393/pexels-photo-335393.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1');
+            background-color: rgba(0, 124, 186, 0.7);
+        }
+        
+        .news-category[data-category="기술/IT"]::before {
+            background-image: url('https://images.pexels.com/photos/267350/pexels-photo-267350.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1');
+            background-color: rgba(111, 66, 193, 0.7);
+        }
+        
+        .news-category[data-category="예술"]::before {
+            background-image: url('https://images.pexels.com/photos/161154/stained-glass-spiral-circle-pattern-161154.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1');
+            background-color: rgba(186, 83, 112, 0.7);
         }
 
         .category-title {
@@ -590,7 +644,7 @@
         }
 
         /* 스크롤 인디케이터 스타일 */
-        .scroll-indicator {
+        .click-indicator {
             position: absolute;
             bottom: 30px;
             transform: translateX(-50%);
@@ -600,6 +654,9 @@
             color: var(--text-secondary);
             font-size: 0.9rem;
             animation: bounce 2s infinite;
+            cursor: pointer; /* 추가: 포인터 커서 표시 */
+            z-index: 100; /* 추가: 겹침 문제 해결 */
+            padding: 15px; /* 추가: 클릭 영역 확장 */
         }
 
         .arrow-down {
@@ -636,6 +693,38 @@
                 min-height: 250px;
             }
         }
+
+        .button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            color: var(--text-primary);
+            background-color: var(--bg-tertiary);
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+        }
+
+        .login-signup-btn {
+            background-color: #1880bd;
+            color: #000;
+        }
+
+        .login-signup-btn:hover {
+            filter: brightness(1.1);
+            transform: scale(1.05);
+        }
+
+        .logout-btn {
+            background-color: #b42f2d;
+        }
+
+        .logout-btn:hover {
+            background-color: #c53030;
+            transform: scale(1.05);
+        }        
     </style>
 </head>
 <body>
@@ -643,6 +732,10 @@
         <h1 id="title-home"><i class="fas fa-newspaper"></i> 뉴스 요약 봇</h1>
         <div class="header-right">
             <span id="date-display"></span>
+            <div id="user">
+                <a class="button login-signup-btn" sec:authorize="isAnonymous()" th:href="@{/login_signin}"><strong>로그인/회원가입</strong></a>
+                <a class="button logout-btn" sec:authorize="isAuthenticated()" th:href="@{/logout}"><strong>로그아웃</strong></a>
+            </div>
         </div>
     </header>
     
@@ -673,9 +766,7 @@
                 <div class="tag" style="--delay: 6;">글로벌 이슈</div>
             </div>
 
-
-            <!-- welcome-view 내부 tags-container 다음에 추가 -->
-            <div class="scroll-indicator">
+            <div class="click-indicator" onclick="setupClickHandling">
                 <p>뉴스 추천 페이지</p>
                 <div class="arrow-down">
                     <i class="fas fa-chevron-down"></i>
@@ -685,8 +776,6 @@
 
         <div id="chat-view" class="chat-container" style="display: none;"></div>
 
-
-        <!-- welcome-view와 chat-view 다음, input-container 전에 추가 -->
         <div id="news-recommendations" class="news-recommendations" style="display: none;">
             <h2 class="recommendations-title">오늘의 추천 뉴스</h2>
             <div class="recommendations-grid">
@@ -849,35 +938,6 @@
             
             return typingDiv;
         }
-        
-        // 초기 화면으로 돌아가는 함수
-        function resetToWelcomeScreen() {
-            const chatView = document.getElementById('chat-view');
-            const welcomeView = document.getElementById('welcome-view');
-            const inputContainer = document.getElementById('input-container');
-            const categoryContainer = document.getElementById('category-container');
-            
-            // 애니메이션 효과로 전환
-            chatView.style.opacity = 0;
-            
-            setTimeout(() => {
-                // 채팅 화면 숨기고 환영 화면 표시
-                chatView.style.display = 'none';
-                categoryContainer.style.display = 'none';
-                welcomeView.style.display = 'flex';
-                welcomeView.style.opacity = 0;
-                
-                setTimeout(() => {
-                    welcomeView.style.opacity = 1;
-                    inputContainer.classList.add('center-input');
-                    
-                    // 메시지 기록 초기화
-                    chatView.innerHTML = '';
-                    state.messages = [];
-                    state.hasConversationStarted = false;
-                }, 100);
-            }, 300);
-        }
 
         // 태그 클릭 이벤트 처리
         function setupTagEvents() {
@@ -910,14 +970,20 @@
             setupTagEvents();
             setupCategoryEvents();
             
-            document.getElementById('title-home').addEventListener('click', resetToWelcomeScreen);
-            
+            document.getElementById('title-home').addEventListener('click', function() {
+                location.reload();
+            });
             addCustomStyles();
             // 뉴스 추천 시스템 초기화
             initNewsRecommendations();
 
-            // 스크롤 이벤트 처리
-            setupScrollHandling();
+            const clickIndicator = document.querySelector('.click-indicator');
+            if (clickIndicator) {
+                // 기존 이벤트 리스너 제거 (중복 방지)
+                clickIndicator.removeEventListener('click', handleClickIndicatorClick);
+                // 새 이벤트 리스너 추가
+                clickIndicator.addEventListener('click', handleClickIndicatorClick);
+            }
 
             // 초기 상태에서 뉴스 추천 섹션은 숨김 상태로 설정
             const newsRecommendations = document.getElementById('news-recommendations');
@@ -1028,36 +1094,36 @@
 
 
         // 더미 뉴스 데이터
-        const dummyNews = {
+        const News = {
             '정치': [
-                { title: '국회, 새로운 예산안 통과 합의', summary: '여야는 내년도 예산안에 대한 협상을 타결하고 본회의 통과를 앞두고 있습니다.' },
-                { title: '대통령, 신임 장관 인선 발표', summary: '오늘 청와대에서 새로운 국방부 장관과 외교부 장관 인선이 발표되었습니다.' },
-                { title: '야당, 정부 정책 비판 성명 발표', summary: '야당은 최근 정부의 경제 정책에 대한 비판적 입장을 담은 성명을 발표했습니다.' }
+                { title: '국회, 새로운 예산안 통과 합의', summary: '여야는 내년도 예산안에 대한 협상을 타결하고 본회의 통과를 앞두고 있습니다.', url: '' },
+                { title: '대통령, 신임 장관 인선 발표', summary: '오늘 청와대에서 새로운 국방부 장관과 외교부 장관 인선이 발표되었습니다.', url: ''  },
+                { title: '야당, 정부 정책 비판 성명 발표', summary: '야당은 최근 정부의 경제 정책에 대한 비판적 입장을 담은 성명을 발표했습니다.', url: ''  }
             ],
             '경제': [
-                { title: '한국은행, 기준금리 동결 결정', summary: '한국은행 금융통화위원회는 현재의 기준금리를 유지하기로 결정했습니다.' },
-                { title: '주요 기업 실적 전망 상향 조정', summary: '올해 4분기 주요 기업들의 실적 전망이 시장 예상치를 상회할 것으로 전망됩니다.' },
-                { title: '원/달러 환율, 3개월 만에 최저치', summary: '원/달러 환율이 글로벌 달러 약세 영향으로 최근 3개월 중 최저치를 기록했습니다.' }
+                { title: '한국은행, 기준금리 동결 결정', summary: '한국은행 금융통화위원회는 현재의 기준금리를 유지하기로 결정했습니다.', url: ''  },
+                { title: '주요 기업 실적 전망 상향 조정', summary: '올해 4분기 주요 기업들의 실적 전망이 시장 예상치를 상회할 것으로 전망됩니다.', url: ''  },
+                { title: '원/달러 환율, 3개월 만에 최저치', summary: '원/달러 환율이 글로벌 달러 약세 영향으로 최근 3개월 중 최저치를 기록했습니다.', url: ''  }
             ],
             '사회': [
-                { title: '전국 대학 입시 원서 접수 시작', summary: '내년도 대학 입학을 위한 수시모집 원서 접수가 오늘부터 시작되었습니다.' },
-                { title: '서울 지하철 무인화 시스템 도입 확대', summary: '서울교통공사는 내년부터 지하철 무인 운영 시스템을 확대 도입할 계획입니다.' },
-                { title: '전국 아파트 가격 상승세 둔화', summary: '부동산 통계에 따르면 최근 전국 아파트 가격 상승세가 둔화되고 있는 것으로 나타났습니다.' }
+                { title: '전국 대학 입시 원서 접수 시작', summary: '내년도 대학 입학을 위한 수시모집 원서 접수가 오늘부터 시작되었습니다.', url: ''  },
+                { title: '서울 지하철 무인화 시스템 도입 확대', summary: '서울교통공사는 내년부터 지하철 무인 운영 시스템을 확대 도입할 계획입니다.', url: ''  },
+                { title: '전국 아파트 가격 상승세 둔화', summary: '부동산 통계에 따르면 최근 전국 아파트 가격 상승세가 둔화되고 있는 것으로 나타났습니다.', url: ''  }
             ],
             '국제': [
-                { title: '미-중 정상회담 개최 예정', summary: '미국과 중국 정상이 다음 달 아시아 정상회의에서 양자 회담을 가질 예정입니다.' },
-                { title: 'EU, 새로운 기후변화 대응책 발표', summary: '유럽연합은 2035년까지의 탄소중립 목표 달성을 위한 새로운 정책을 발표했습니다.' },
-                { title: '일본, 경기 회복세 뚜렷', summary: '일본 경제가 코로나19 이후 회복세를 보이며 수출과 내수가 모두 개선되고 있습니다.' }
+                { title: '미-중 정상회담 개최 예정', summary: '미국과 중국 정상이 다음 달 아시아 정상회의에서 양자 회담을 가질 예정입니다.', url: ''  },
+                { title: 'EU, 새로운 기후변화 대응책 발표', summary: '유럽연합은 2035년까지의 탄소중립 목표 달성을 위한 새로운 정책을 발표했습니다.', url: ''  },
+                { title: '일본, 경기 회복세 뚜렷', summary: '일본 경제가 코로나19 이후 회복세를 보이며 수출과 내수가 모두 개선되고 있습니다.', url: ''  }
             ],
             '기술/IT': [
-                { title: '삼성전자, 차세대 반도체 개발 성공', summary: '삼성전자가 3나노 공정의 차세대 반도체 개발에 성공했다고 발표했습니다.' },
-                { title: '인공지능 윤리 가이드라인 발표', summary: '과학기술정보통신부는 인공지능 개발 및 활용을 위한 윤리 가이드라인을 발표했습니다.' },
-                { title: '국내 5G 가입자 2000만 돌파', summary: '국내 5G 서비스 가입자가 출시 3년 만에 2000만 명을 돌파했습니다.' }
+                { title: '삼성전자, 차세대 반도체 개발 성공', summary: '삼성전자가 3나노 공정의 차세대 반도체 개발에 성공했다고 발표했습니다.', url: ''  },
+                { title: '인공지능 윤리 가이드라인 발표', summary: '과학기술정보통신부는 인공지능 개발 및 활용을 위한 윤리 가이드라인을 발표했습니다.', url: ''  },
+                { title: '국내 5G 가입자 2000만 돌파', summary: '국내 5G 서비스 가입자가 출시 3년 만에 2000만 명을 돌파했습니다.', url: ''  }
             ],
             '예술': [
-                { title: '국립현대미술관, 가을 특별전 개최', summary: '국립현대미술관은 다음 달부터 한국 현대미술 50년을 조망하는 특별전을 개최합니다.' },
-                { title: '유명 뮤지컬 레미제라블 내한 공연', summary: '세계적인 뮤지컬 레미제라블이 10년 만에 한국 공연을 개최합니다.' },
-                { title: '한국영화 기생충, 해외 영화제 수상', summary: '봉준호 감독의 기생충이 또 다른 해외 영화제에서 수상의 영예를 안았습니다.' }
+                { title: '국립현대미술관, 가을 특별전 개최', summary: '국립현대미술관은 다음 달부터 한국 현대미술 50년을 조망하는 특별전을 개최합니다.', url: ''  },
+                { title: '유명 뮤지컬 레미제라블 내한 공연', summary: '세계적인 뮤지컬 레미제라블이 10년 만에 한국 공연을 개최합니다.', url: ''  },
+                { title: '한국영화 기생충, 해외 영화제 수상', summary: '봉준호 감독의 기생충이 또 다른 해외 영화제에서 수상의 영예를 안았습니다.', url: ''  }
             ]
         };
 
@@ -1070,9 +1136,9 @@
                 const categoryName = category.dataset.category;
                 const newsItems = category.querySelector('.news-items');
                 
-                // 더미 뉴스 데이터 추가
-                if (dummyNews[categoryName]) {
-                    dummyNews[categoryName].forEach(news => {
+                //뉴스 데이터 추가
+                if (News[categoryName]) {
+                    News[categoryName].forEach(news => {
                         const newsItem = document.createElement('div');
                         newsItem.className = 'news-item';
                         newsItem.innerHTML = `
@@ -1080,9 +1146,9 @@
                             <div class="news-item-summary">${news.summary}</div>
                         `;
                         
-                        // 뉴스 아이템 클릭 시 해당 내용을 입력창에 자동 입력
+                        // 뉴스 아이템 클릭 시 해당 뉴스의 url을 입력창에 자동 입력
                         newsItem.addEventListener('click', () => {
-                            document.getElementById('articleText').value = news.title;
+                            document.getElementById('articleText').value = news.url;
                             toggleNewsRecommendations(false);
                             setTimeout(() => {
                                 sendArticle();
@@ -1095,51 +1161,28 @@
             });
         }
 
-        // 스크롤 처리 설정
-        function setupScrollHandling() {
-            let isNewsVisible = false;
-            let isTransitioning = false; // 전환 중인지 추적하는 플래그 추가
-            const welcomeView = document.getElementById('welcome-view');
-            const newsRecommendations = document.getElementById('news-recommendations');
-            
-            // 스크롤 이벤트 디바운싱을 위한 변수
-            let scrollTimeout;
-            
-            window.addEventListener('scroll', function() {
-                // 이미 전환 중이면 무시
-                if (isTransitioning) return;
-                
-                // 디바운싱 적용
-                clearTimeout(scrollTimeout);
-                scrollTimeout = setTimeout(function() {
-                    // state 객체가 없거나 hasConversationStarted가 false일 때만 동작
-                    if (!state || !state.hasConversationStarted) {
-                        // 임계값을 더 멀리 설정 (100px -> 200px, 50px -> 20px)
-                        if (window.scrollY > 20 && !isNewsVisible) {
-                            isTransitioning = true; // 전환 시작
-                            console.log('뉴스 추천 표시');
-                            toggleNewsRecommendations(true);
-                            isNewsVisible = true;
-                            
-                            // 전환 완료 후 플래그 리셋
-                            setTimeout(() => {
-                                isTransitioning = false;
-                            }, 600); // 애니메이션 완료 시간보다 길게
-                            
-                        } else if (window.scrollY < 20 && isNewsVisible) {
-                            isTransitioning = true; // 전환 시작
-                            console.log('뉴스 추천 숨김');
-                            toggleNewsRecommendations(false);
-                            isNewsVisible = false;
-                            
-                            // 전환 완료 후 플래그 리셋
-                            setTimeout(() => {
-                                isTransitioning = false;
-                            }, 600); // 애니메이션 완료 시간보다 길게
-                        }
-                    }
-                }, 100); // 100ms 디바운싱
-            });
+        function setupClickHandling() {
+            window.removeEventListener('scroll', handleScroll);
+    
+            const clickIndicator = document.querySelector('.click-indicator');
+            if (clickIndicator) {
+                clickIndicator.removeEventListener('click', handleClickIndicatorClick);
+                clickIndicator.addEventListener('click', handleClickIndicatorClick);
+            }
+        }
+
+        function handleClickIndicatorClick(e) {
+            e.preventDefault(); // 기본 동작 방지
+            e.stopPropagation(); // 이벤트 전파 중지
+    
+            console.log('인디케이터 클릭됨');
+    
+            // 대화가 시작되지 않았을 때만 작동
+            if (!state.hasConversationStarted) {
+                toggleNewsRecommendations(true);
+            }
+    
+            return false; // 추가 전파 방지
         }
 
         // 뉴스 추천 화면 토글
@@ -1148,7 +1191,7 @@
             const newsRecommendations = document.getElementById('news-recommendations');
             const inputContainer = document.getElementById('input-container');
             
-            console.log('토글 함수 실행:', show); // 디버깅용
+            console.log('토글 함수 실행:', show);
             
             if (show) {
                 // 환영 화면 숨기기
@@ -1158,7 +1201,6 @@
                     
                     // 뉴스 추천 화면 표시
                     newsRecommendations.style.display = 'block';
-                    document.body.style.overflow = 'auto'; // 스크롤 허용
                     
                     setTimeout(() => {
                         newsRecommendations.classList.add('visible');
