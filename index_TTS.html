@@ -543,6 +543,33 @@
             hasConversationStarted: false
         };
 
+        //STT 구현
+        function speechToText() {
+            const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+            recognition.lang = 'ko-KR';
+            recognition.onresult = (event) => {
+                const transcript = event.results[0][0].transcript;
+                document.getElementById('articleText').textContent = transcript;
+            };
+            recognition.start();
+        }
+
+        //TTS 구현
+        function textToSpeech(event) {
+            const avatar = event.currentTarget;
+            const messageDiv = avatar.closest('.message.bot-message');
+            if (!messageDiv) return;
+
+            const textDiv = messageDiv.querySelector('.message-content');
+            if (!textDiv) return;
+
+            const textToRead = textDiv.textContent.trim();
+            if(!textToRead) return;
+
+            const utterance = new SpeechSynthesisUtterance(textToRead);
+            utterance.lang = 'ko-KR';
+            speechSynthesis.speak(utterance);
+        }
         // 현재 날짜 표시
         function displayDate() {
             const date = new Date();
@@ -600,6 +627,8 @@
                 const avatar = document.createElement('div');
                 avatar.className = 'avatar bot-avatar';
                 avatar.innerHTML = '<i class="fas fa-robot"></i>';
+                //TTS 기능 리스너 추가
+                avatar.addEventListener('click', textToSpeech);
                 messageDiv.appendChild(avatar);
             } else if (!isUser && isFollowUp) {
                 messageDiv.style.marginLeft = '52px';
@@ -642,8 +671,6 @@
             const avatar = document.createElement('div');
             avatar.className = 'avatar bot-avatar';
             avatar.innerHTML = '<i class="fas fa-robot"></i>';
-            //TTS 기능 리스너 추가
-            avatar.addEventListener('click', textToSpeech);
             typingDiv.appendChild(avatar);
             
             const typingContent = document.createElement('div');
@@ -749,33 +776,7 @@
             document.head.appendChild(style);
         }
 
-        //STT 구현
-        function speechToText() {
-        	const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
-    		recognition.lang = 'ko-KR';
-    		recognition.onresult = (event) => {
-        		const transcript = event.results[0][0].transcript;
-        		document.getElementById('articleText').textContent = transcript;
-    		};
-    		recognition.start();
-        }
-
-        //TTS 구현
-        function textToSpeech(event) {
-            const avatar = event.currentTarget;
-			const messageDiv = avatar.closest('.message.bot-message');
-			if (!messageDiv) return;
-
-			const textDiv = messageDiv.querySelector('.message-content');
-			if (!textDiv) return;
-
-			const textToRead = textDiv.textContent.trim();
-			if(!textToRead) return;
-
-			const utterance = new SpeechSynthesisUtterance(textToRead);
-			utterance.lang = 'ko-KR';
-			speechSynthesis.speak(utterance);
-		}
+        
 
         async function sendArticle() {
             const articleText = document.getElementById('articleText').value;
