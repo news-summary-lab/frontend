@@ -618,32 +618,14 @@
         .news-item-summary {
             font-size: 0.8rem;
             color: var(--text-secondary);
-            max-height: 2.6em; /* 2줄 높이 (line-height 1.3 * 2) */
+            max-height: 2.6em;
             overflow: hidden;
             text-overflow: ellipsis;
             line-height: 1.3;
             position: relative;
         }
 
-        /* 여러 줄 말줄임표 효과 적용 */
-        .news-item-summary::after {
-            content: '...';
-            position: absolute;
-            right: 0;
-            bottom: 0;
-            padding-left: 3px;
-            background-color: var(--bg-tertiary);
-        }
 
-        .news-item:hover .news-item-summary::after {
-            background-color: var(--accent-primary);
-        }
-
-        .news-item:hover .news-item-summary {
-            color: var(--bg-secondary);
-        }
-
-        /* 스크롤 인디케이터 스타일 */
         .click-indicator {
             position: absolute;
             bottom: 30px;
