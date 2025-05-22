@@ -9,6 +9,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>뉴스 요약 봇</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+	<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -99,24 +100,54 @@
             flex: 1;
             overflow-y: auto;
             padding: 1rem;
+            padding: 60px 1rem 80px 1rem;
             display: flex;
             flex-direction: column;
-            scrollbar-width: thin;
+            scrollbar-width: none;
             scrollbar-color: var(--accent-primary) var(--bg-secondary);
             transition: var(--transition);
         }
         
-        .chat-container::-webkit-scrollbar {
+        .chat-container:hover::-webkit-scrollbar {
             width: 6px;
         }
-        
+
         .chat-container::-webkit-scrollbar-track {
             background: var(--bg-secondary);
+            opacity: 0;
+            transition: opacity 0.3s ease;
         }
-        
+
+        .chat-container:hover::-webkit-scrollbar-track {
+            opacity: 1;
+        }
+
         .chat-container::-webkit-scrollbar-thumb {
             background-color: var(--accent-primary);
             border-radius: 3px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .chat-container:hover::-webkit-scrollbar-thumb {
+            opacity: 1;
+        }
+
+        .chat-container.scrolling::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .chat-container.scrolling::-webkit-scrollbar-track {
+            opacity: 1;
+        }
+
+        .chat-container.scrolling::-webkit-scrollbar-thumb {
+            opacity: 1;
+        }
+
+        .chat-container.scrolling {
+            scrollbar-width: thin;
+            scrollbar-color: var(--accent-primary) var(--bg-secondary);
         }
         
         .welcome-container {
@@ -447,7 +478,15 @@
             }
             
             .main-container {
-                padding: 0.5rem;
+                padding: 0.5rem 0.5rem 80px 0.5rem;
+            }
+            
+            .input-container {
+                width: calc(100% - 1rem);
+            }
+            
+            .input-container.chat-active {
+                width: calc(100% - 1rem) !important;
             }
             
             .message-content {
@@ -462,8 +501,6 @@
                 font-size: 3rem;
             }
         }
-
-
 
         /* 뉴스 추천 섹션 스타일 */
         .news-recommendations {
@@ -706,6 +743,123 @@
         .logout-btn:hover {
             background-color: #c53030;
             transform: scale(1.05);
+        }
+        
+        /* 마이크 버튼 꾸미기 */
+        .mic-button {
+            position: absolute;
+            right: 56px;
+            bottom: 10px;
+            background-color: var(--accent-primary);
+            color: var(--bg-primary);
+            border: none;
+            border-radius: 50%;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        
+        .mic-button:hover {
+            background-color: var(--accent-secondary);
+            transform: rotate(15deg) scale(1.1);
+        }        
+        /* 스피커 아이콘 변경 */
+        .avatar.bot-avatar:hover .fas.fa-robot::before {
+			content: "\f04b";
+		}
+        
+        
+        .input-container.chat-active {
+            position: fixed !important;
+            bottom: 20px !important;
+            left: 50% !important;
+            right: auto !important;
+            top: auto !important;
+            transform: translateX(-50%) !important;
+            width: calc(100% - 2rem) !important;
+            max-width: 860px !important;
+            z-index: 200 !important;
+            margin-top: 0 !important;
+        }
+
+        /* 5. history-container 스타일 수정 (별도 스크롤 제거) */
+        .history-container {
+            display: none;
+            max-height: none; /* 최대 높이 제한 제거 */
+            overflow: visible; /* 오버플로우 제거 */
+            transition: opacity 0.3s ease-in-out;
+            border-bottom: 1px solid var(--bg-tertiary);
+            margin-bottom: 1rem;
+        }
+        .history-container.show {
+            display: block;
+            opacity: 1;
+        }
+
+        /* 3. history-toggle-button을 고정으로 변경 */
+        .history-toggle-button {
+            display: none;
+            position: fixed;
+            top: 80px; /* header 높이 아래 */
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: var(--bg-tertiary);
+            color: var(--text-secondary);
+            border: 1px solid var(--bg-tertiary);
+            border-radius: 20px;
+            padding: 0.5rem 1rem;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: var(--transition);
+            z-index: 150;
+            box-shadow: var(--shadow);
+        }
+
+        .history-toggle-button:hover {
+            background-color: var(--accent-primary);
+            color: var(--bg-primary);
+            border-color: var(--accent-primary);
+        }
+
+        .history-toggle-button.show {
+            display: block;
+        }
+
+        /* 7. history-separator 스타일 (동적 생성용) */
+        .history-separator {
+            text-align: center;
+            color: var(--text-tertiary);
+            font-size: 0.8rem;
+            margin: 1.5rem 0; /* 마진 증가 */
+            position: relative;
+            display: none; /* 기본적으로 숨김 */
+        }
+
+        .history-separator::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background-color: var(--bg-tertiary);
+            z-index: 1;
+        }
+
+        .history-separator span {
+            background-color: var(--bg-primary);
+            padding: 0 1rem;
+            position: relative;
+            z-index: 2;
+        }
+
+        /* 7. 히스토리 메시지 기본 숨김 처리 */
+        .history-message {
+            display: none;
         }        
     </style>
 </head>
@@ -722,16 +876,6 @@
     </header>
     
     <div class="main-container">
-        <div id="category-container" class="category-chips" style="display: none;">
-            <div class="category-chip active" style="--delay: 1;">전체</div>
-            <div class="category-chip" style="--delay: 2;">정치</div>
-            <div class="category-chip" style="--delay: 3;">경제</div>
-            <div class="category-chip" style="--delay: 4;">사회</div>
-            <div class="category-chip" style="--delay: 5;">국제</div>
-            <div class="category-chip" style="--delay: 6;">기술</div>
-            <div class="category-chip" style="--delay: 7;">문화</div>
-        </div>
-        
         <div id="welcome-view" class="welcome-container">
             <div class="welcome-logo">
                 <i class="fas fa-newspaper"></i>
@@ -740,10 +884,10 @@
             <p class="welcome-subtitle">궁금한 뉴스나 주제를 입력하시면 AI가 빠르게 요약해 드립니다.<br>최신 이슈를 간편하게 파악하세요.</p>
             
             <div class="tags-container">
-                <div class="tag" style="--delay: 1;">대선 결과</div>
-                <div class="tag" style="--delay: 2;">최신 경제 동향</div>
-                <div class="tag" style="--delay: 3;">코로나19 현황</div>
-                <div class="tag" style="--delay: 4;">기후 변화</div>
+                <div class="tag" style="--delay: 1;">대선 현황</div>
+                <div class="tag" style="--delay: 2;">오늘의 날씨</div>
+                <div class="tag" style="--delay: 3;">오늘의 추천 코디</div>
+                <div class="tag" style="--delay: 4;">요즘 경제 상황</div>
                 <div class="tag" style="--delay: 5;">테크 트렌드</div>
                 <div class="tag" style="--delay: 6;">글로벌 이슈</div>
             </div>
@@ -756,7 +900,14 @@
             </div>
         </div>
 
-        <div id="chat-view" class="chat-container" style="display: none;"></div>
+        <div id="chat-view" class="chat-container" style="display: none;">
+            <button id="history-toggle-button" class="history-toggle-button">
+                <i class="fas fa-chevron-up"></i> 과거 대화 보기
+            </button>
+            <div id="history-container" class="history-container"></div>
+
+            <div id="current-chat"></div>            
+        </div>
 
         <div id="news-recommendations" class="news-recommendations" style="display: none;">
             <h2 class="recommendations-title">오늘의 추천 뉴스</h2>
@@ -792,6 +943,11 @@
         
         <div id="input-container" class="input-container center-input" contenteditable="true">
             <textarea id="articleText" class="articleText" placeholder="뉴스 주제나 URL을 입력하세요..." rows="1"></textarea>
+
+            <button id="mic-button" class="mic-button" onclick="speechToText()">
+            	<i class="fa-solid fa-microphone"></i>
+            </button>
+
             <button id="send-button" class="send-button" onclick="sendArticle()">
                 <i class="fas fa-paper-plane"></i>
             </button>
@@ -803,9 +959,37 @@
             sendingMessage: false,
             typingIndicator: null,
             messages: [],
-            hasConversationStarted: false
+            hasConversationStarted: false,
+            historyVisible: false,
+            historyMessages: []
         };
+        //STT 구현
+        function speechToText() {
+            const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+            recognition.lang = 'ko-KR';
+            recognition.onresult = (event) => {
+                const transcript = event.results[0][0].transcript;
+                document.getElementById('articleText').textContent = transcript;
+            };
+            recognition.start();
+        }
 
+        //TTS 구현
+        function textToSpeech(event) {
+            const avatar = event.currentTarget;
+            const messageDiv = avatar.closest('.message.bot-message');
+            if (!messageDiv) return;
+
+            const textDiv = messageDiv.querySelector('.message-content');
+            if (!textDiv) return;
+
+            const textToRead = textDiv.textContent.trim();
+            if(!textToRead) return;
+
+            const utterance = new SpeechSynthesisUtterance(textToRead);
+            utterance.lang = 'ko-KR';
+            speechSynthesis.speak(utterance);
+        }
         // 현재 날짜 표시
         function displayDate() {
             const date = new Date();
@@ -822,10 +1006,14 @@
                 if (this.scrollHeight > 200) {
                     this.style.height = '200px';
                 }
+
+                // 입력 시 최하단으로 스크롤
+                scrollToBottom();
             });
             
             textarea.addEventListener('focus', function() {
                 this.parentElement.classList.add('focused');
+                scrollToBottom();
             });
             
             textarea.addEventListener('blur', function() {
@@ -840,29 +1028,47 @@
             });
         }
 
-        // 메시지 추가 함수
-        function addMessage(isUser, content, isFollowUp = false) {
+        // 2. 스크롤을 최하단으로 이동하는 함수
+        function scrollToBottom() {
             const chatView = document.getElementById('chat-view');
+            setTimeout(() => {
+                chatView.scrollTo({
+                    top: chatView.scrollHeight,
+                    behavior: 'smooth'
+                });
+            }, 100);
+        }
+
+        let loadedHistory = [];      // 사이트 로딩 시 불러온 과거 기록 (화면 표시용)
+        let currentSessionHistory = []; // 현재 세션의 대화 기록 (DB 저장용)        
+
+        // 메시지 추가 함수
+        function addMessage(isUser, content, isFollowUp = false, isHistory = false) {
+            const chatView = document.getElementById('current-chat');            
+            const mainChatView = document.getElementById('chat-view');
             const welcomeView = document.getElementById('welcome-view');
             const inputContainer = document.getElementById('input-container');
-            const categoryContainer = document.getElementById('category-container');
             
-            // 첫 메시지면 환영 화면 숨기고 채팅 화면 표시
-            if (chatView.style.display === 'none') {
+            if (!isHistory && mainChatView.style.display === 'none') {
                 welcomeView.style.display = 'none';
-                chatView.style.display = 'flex';
-                categoryContainer.style.display = 'flex';
+                mainChatView.style.display = 'flex';
                 inputContainer.classList.remove('center-input');
+                inputContainer.classList.add('chat-active');
                 state.hasConversationStarted = true;
             }
             
             const messageDiv = document.createElement('div');
             messageDiv.className = `message ${isUser ? 'user-message' : 'bot-message'}`;
+
+            if (isHistory) {
+                messageDiv.classList.add('history-message');
+            }
             
             if (!isUser && !isFollowUp) {
                 const avatar = document.createElement('div');
                 avatar.className = 'avatar bot-avatar';
                 avatar.innerHTML = '<i class="fas fa-robot"></i>';
+                avatar.addEventListener('click', textToSpeech);
                 messageDiv.appendChild(avatar);
             } else if (!isUser && isFollowUp) {
                 messageDiv.style.marginLeft = '52px';
@@ -870,29 +1076,47 @@
             
             const messageContent = document.createElement('div');
             messageContent.className = 'message-content';
-            messageContent.textContent = content;
+            
+            if (isUser) {
+				messageContent.textContent = content;
+			} else {
+				// ✅ 마크다운 렌더링 적용
+				messageContent.innerHTML = marked.parse(content);
+			}
+
             messageDiv.appendChild(messageContent);
             
             chatView.appendChild(messageDiv);
             
-            // 지연 후 애니메이션 시작
-            setTimeout(() => {
-                messageDiv.style.animation = 'slideIn 0.5s ease-out forwards';
-            }, 100);
-            
-            // 스크롤 부드럽게 아래로 이동
-            setTimeout(() => {
-                chatView.scrollTo({
-                    top: chatView.scrollHeight,
-                    behavior: 'smooth'
-                });
-            }, 200);
+            if (!isHistory) {
+                // 지연 후 애니메이션 시작 (현재 대화만)
+                setTimeout(() => {
+                    messageDiv.style.animation = 'slideIn 0.5s ease-out forwards';
+                }, 100);
 
-            // 상태 업데이트
-            state.messages.push({
-                content: content,
-                isUser: isUser
-            });
+                // 현재 대화일 때만 스크롤 이동
+                scrollToBottom();
+                
+                // 스크롤 부드럽게 아래로 이동 (현재 대화만)
+                setTimeout(() => {
+                    document.getElementById('chat-view').scrollTo({
+                        top: document.getElementById('chat-view').scrollHeight,
+                        behavior: 'smooth'
+                    });
+                }, 200);
+
+                // 상태 업데이트
+                state.messages.push({
+                    content: content,
+                    isUser: isUser
+                });
+            } else {
+                // 과거 메시지 상태 업데이트
+                state.historyMessages.push({
+                    content: content,
+                    isUser: isUser
+                });
+            }
         }
 
         // 타이핑 인디케이터 표시 함수
@@ -933,31 +1157,25 @@
             });
         }
 
-        // 카테고리 클릭 이벤트 처리
-        function setupCategoryEvents() {
-            const categories = document.querySelectorAll('.category-chip');
-            categories.forEach(category => {
-                category.addEventListener('click', function() {
-                    document.querySelector('.category-chip.active').classList.remove('active');
-                    this.classList.add('active');
-                });
-            });
-        }
-
         let conversation = [];
 
         document.addEventListener('DOMContentLoaded', async () => {
             displayDate();
             autoResizeTextarea();
             setupTagEvents();
-            setupCategoryEvents();
             
             document.getElementById('title-home').addEventListener('click', function() {
                 location.reload();
             });
+
+            // 과거 대화 토글 버튼 이벤트 추가
+            document.getElementById('history-toggle-button').addEventListener('click', toggleHistory);
+            
             addCustomStyles();
             // 뉴스 추천 시스템 초기화
             initNewsRecommendations();
+
+            setupScrollbarEvents();
 
             const clickIndicator = document.querySelector('.click-indicator');
             if (clickIndicator) {
@@ -977,12 +1195,28 @@
                 const res = await fetch('/api/summaries/history');
                 const json = await res.json();
                 console.log("대화 기록 응답:", json);
-                conversation = Array.isArray(json) ? json : [];
+                loadedHistory = Array.isArray(json) ? json : [];
                 updateConversation();
             } catch (err) {
                 console.error("대화 불러오기 실패", err);
             }
+
         });
+
+        function setupScrollbarEvents() {
+            const chatContainer = document.getElementById('chat-view');
+            let scrollTimer;
+            
+            chatContainer.addEventListener('scroll', function() {
+                this.classList.add('scrolling');
+                
+                clearTimeout(scrollTimer);
+                
+                scrollTimer = setTimeout(() => {
+                    this.classList.remove('scrolling');
+                }, 300);
+            });
+        }
 
         function addCustomStyles() {
             const style = document.createElement('style');
@@ -1037,16 +1271,18 @@
 
                 conversation.push({ prompt: articleText, response: data.summary });
 
-                let summary = data.summary;
+                // 현재 세션 기록에 추가 (DB 저장용)
+                currentSessionHistory.push({ prompt: articleText, response: data.summary });
+                // 콘솔에 현재 세션 기록 출력
+                console.log("현재 세션 기록:", currentSessionHistory);
 
-                // 따옴표 제거
-                summary = summary.replace(/[""]/g, '');
+		        // ✅ 문자열 정리 및 마크다운 파싱
+		        let summary = data.summary || '';
+		        summary = summary.replace(/^"|"$/g, ''); // 양끝 따옴표 제거
+		        const parsed = marked.parse(summary);
 
-                // **로 둘러싸인 내용 제거 (** 포함)
-                summary = summary.replace(/\*\*.*?\*\*/g, '');
-
-                // 단락 나누기 (\n\n 기준)
-                const paragraphs = summary.split(/\n+/);
+		        // ✅ 단락 분리 후 메시지로 추가
+		        const paragraphs = parsed.split(/(?:<br\s*\/?>\s*){2,}|<\/h[1-6]>/i);
 
                 paragraphs.forEach((paragraph, index) => {
                     if (paragraph.trim()) {
@@ -1065,15 +1301,102 @@
             }
         }
 
-        function updateConversation() {
-            conversation.forEach(entry => {
-                addMessage(true, entry.prompt);
-                addMessage(false, entry.response);
-            });
+
+        //DB저장 함수(수정 필요)
+        function saveCurrentSessionToDb() {
+            if (currentSessionHistory.length > 0) {
+                console.log("=== DB로 전송할 현재 세션 기록 ===");
+                console.log(JSON.stringify(currentSessionHistory, null, 2));
+                alert("현재 세션 기록이 콘솔에 출력되었습니다. (실제로는 DB로 전송됩니다)");
+            } else {
+                console.log("저장할 세션 기록이 없습니다.");
+                alert("저장할 세션 기록이 없습니다.");
+            }
         }
 
 
 
+        function updateConversation() {
+            const historyButton = document.getElementById('history-toggle-button');
+            const currentChat = document.getElementById('current-chat');
+            
+            if (loadedHistory.length > 0) {
+                // 과거 대화가 있으면 버튼 표시
+                historyButton.classList.add('show');
+                    
+                loadedHistory.forEach(entry => {
+                    addMessage(true, entry.prompt, false, true);		        
+                    
+                    // ✅ response 문자열 정리 및 마크다운 파싱
+                    let response = entry.response || '';
+                    response = response.replace(/^"|"$/g, '');
+                    const parsed = marked.parse(response);
+
+                    // ✅ 단락 분리 후 메시지로 추가
+                    const paragraphs = parsed.split(/(?:<br\s*\/?>\s*){2,}|<\/h[1-6]>/i);
+                    paragraphs.forEach((html, index) => {
+                        if (html.trim()) {
+                            addMessage(false, html.trim(), index > 0, true);
+                        }
+                    });
+                });
+                
+                const separator = document.createElement('div');
+                separator.className = 'history-separator';
+                separator.id = 'history-separator-line';
+                separator.style.display = 'none';
+                separator.innerHTML = '<span>현재 대화</span>';
+                currentChat.appendChild(separator);
+            }
+        }
+
+        // 페이지 종료 시 현재 세션 저장
+        window.addEventListener('beforeunload', function() {
+            saveCurrentSessionToDb();
+        });
+
+
+        function toggleHistory() {
+            const historyMessages = document.querySelectorAll('.history-message');
+            const historyButton = document.getElementById('history-toggle-button');
+            const historySeparator = document.getElementById('history-separator-line');
+            const icon = historyButton.querySelector('i');
+            
+            state.historyVisible = !state.historyVisible;
+            
+            if (state.historyVisible) {
+                // 히스토리 메시지들을 보이게 함
+                historyMessages.forEach(msg => {
+                    msg.style.display = 'flex';
+                });
+                if (historySeparator) {
+                    historySeparator.style.display = 'block';
+                }
+                icon.className = 'fas fa-chevron-down';
+                historyButton.innerHTML = '<i class="fas fa-chevron-down"></i> 과거 대화 숨기기';
+                
+                // 히스토리가 표시되면 맨 위로 스크롤
+                setTimeout(() => {
+                    document.getElementById('chat-view').scrollTo({
+                        top: 0,
+                        behavior: 'smooth'
+                    });
+                }, 100);
+            } else {
+                // 히스토리 메시지들을 숨김
+                historyMessages.forEach(msg => {
+                    msg.style.display = 'none';
+                });
+                if (historySeparator) {
+                    historySeparator.style.display = 'none';
+                }
+                icon.className = 'fas fa-chevron-up';
+                historyButton.innerHTML = '<i class="fas fa-chevron-up"></i> 과거 대화 보기';
+                
+                // 히스토리가 숨겨지면 현재 대화로 스크롤
+                scrollToBottom();
+            }
+        }
 
         // 더미 뉴스 데이터
         const News = {
