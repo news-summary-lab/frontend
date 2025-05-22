@@ -9,6 +9,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>뉴스 요약 봇</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+	<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -29,7 +30,7 @@
             --shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
             --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
         }
-        
+                
         body {
             background-color: var(--bg-primary);
             color: var(--text-primary);
@@ -48,6 +49,10 @@
             align-items: center;
             transition: var(--transition);
             z-index: 100;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
         }
         
         .header h1 {
@@ -73,6 +78,10 @@
             align-items: center;
             color: var(--text-tertiary);
         }
+
+        #user {
+            margin-left: 10px;
+        }
         
         .main-container {
             flex: 1;
@@ -81,7 +90,7 @@
             padding: 1rem;
             width: 100%;
             max-width: 900px;
-            margin: 0 auto;
+            margin: 70px auto 0;
             height: calc(100vh - 70px);
             position: relative;
             transition: var(--transition);
@@ -117,6 +126,7 @@
             align-items: center;
             justify-content: center;
             height: 100%;
+            min-height: calc(90vh - 70px);
             text-align: center;
             margin-bottom: 30px;
             padding: 0 2rem;
@@ -453,6 +463,278 @@
                 font-size: 3rem;
             }
         }
+
+
+
+        /* 뉴스 추천 섹션 스타일 */
+        .news-recommendations {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            background-color: var(--bg-primary);
+            padding-top: 90px;
+            padding: 2rem 1rem;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+            z-index: 10;
+        }
+
+        .news-recommendations.visible {
+            opacity: 1;
+        }
+
+        .recommendations-title {
+            text-align: center;
+            color: var(--accent-primary);
+            font-size: 1.8rem;
+            margin-bottom: 2rem;
+            animation: fadeIn 1s ease;
+        }
+
+        .recommendations-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: repeat(2, 1fr);
+            gap: 1.5rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+
+        .news-category {
+            background-color: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 1rem;
+            box-shadow: var(--shadow);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            height: 100%;
+            min-height: 300px;
+            display: flex;
+            flex-direction: column;
+            animation: fadeInUp 0.6s calc(var(--delay) * 0.15s) both;
+            position: relative;
+            overflow: hidden;
+        }
+        .news-category:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.5);
+        }
+
+        .news-category::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-position: left top;
+            background-size: cover;
+            background-repeat: no-repeat;
+            opacity: 0.23;
+            z-index: 0;
+            mask-image: linear-gradient(to right, rgba(0,0,0,0.8) 30%, rgba(0,0,0,0) 70%);
+            -webkit-mask-image: linear-gradient(to left, rgba(0,0,0,0.8) 30%, rgba(0,0,0,0) 80%);
+        }
+        
+        .news-category[data-category="정치"]::before {
+            background-image: url('https://images.pexels.com/photos/1550337/pexels-photo-1550337.jpeg');
+            background-color: rgba(72, 105, 196, 0.7);
+        }
+        
+        .news-category[data-category="경제"]::before {
+            background-image: url('https://images.pexels.com/photos/210607/pexels-photo-210607.jpeg');
+            background-color: rgba(49, 151, 108, 0.7);
+        }
+        
+        .news-category[data-category="사회"]::before {
+            background-image: url('https://images.pexels.com/photos/1634278/pexels-photo-1634278.jpeg');
+            background-color: rgba(191, 87, 0, 0.7);
+        }
+        
+        .news-category[data-category="국제"]::before {
+            background-image: url('https://images.pexels.com/photos/335393/pexels-photo-335393.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1');
+            background-color: rgba(0, 124, 186, 0.7);
+        }
+        
+        .news-category[data-category="기술/IT"]::before {
+            background-image: url('https://images.pexels.com/photos/267350/pexels-photo-267350.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1');
+            background-color: rgba(111, 66, 193, 0.7);
+        }
+        
+        .news-category[data-category="예술"]::before {
+            background-image: url('https://images.pexels.com/photos/161154/stained-glass-spiral-circle-pattern-161154.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1');
+            background-color: rgba(186, 83, 112, 0.7);
+        }
+
+        .category-title {
+            color: var(--accent-primary);
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--bg-tertiary);
+        }
+
+        .news-items {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
+            overflow-y: auto;
+            scrollbar-width: thin;
+            scrollbar-color: var(--accent-primary) var(--bg-secondary);
+        }
+
+        .news-items::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .news-items::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+
+        .news-items::-webkit-scrollbar-thumb {
+            background-color: var(--accent-primary);
+            border-radius: 3px;
+        }
+
+        .news-item {
+            background-color: var(--bg-tertiary);
+            border-radius: 8px;
+            padding: 0.8rem;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .news-item:hover {
+            background-color: var(--accent-primary);
+            color: var(--bg-primary);
+        }
+
+        .news-item-title {
+            font-weight: bold;
+            margin-bottom: 0.3rem;
+            font-size: 0.9rem;
+        }
+
+        .news-item-summary {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            max-height: 2.6em;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            line-height: 1.3;
+            position: relative;
+        }
+
+
+        .click-indicator {
+            position: absolute;
+            bottom: 30px;
+            transform: translateX(-50%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            animation: bounce 2s infinite;
+            cursor: pointer; /* 추가: 포인터 커서 표시 */
+            z-index: 100; /* 추가: 겹침 문제 해결 */
+            padding: 15px; /* 추가: 클릭 영역 확장 */
+        }
+
+        .arrow-down {
+            margin-top: 8px;
+            font-size: 1.2rem;
+            color: var(--accent-primary);
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% {
+                transform: translateY(0);
+            }
+            40% {
+                transform: translateY(-10px);
+            }
+            60% {
+                transform: translateY(-5px);
+            }
+        }
+
+        /* 반응형 디자인 업데이트 */
+        @media (max-width: 992px) {
+            .recommendations-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .recommendations-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .news-category {
+                min-height: 250px;
+            }
+        }
+
+        .button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            color: var(--text-primary);
+            background-color: var(--bg-tertiary);
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+        }
+
+        .login-signup-btn {
+            background-color: #1880bd;
+            color: #000;
+        }
+
+        .login-signup-btn:hover {
+            filter: brightness(1.1);
+            transform: scale(1.05);
+        }
+
+        .logout-btn {
+            background-color: #b42f2d;
+        }
+
+        .logout-btn:hover {
+            background-color: #c53030;
+            transform: scale(1.05);
+        }
+        
+        /* 마이크 버튼 꾸미기 */
+        .mic-button {
+            position: absolute;
+            right: 56px;
+            bottom: 10px;
+            background-color: var(--accent-primary);
+            color: var(--bg-primary);
+            border: none;
+            border-radius: 50%;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        
+        .mic-button:hover {
+            background-color: var(--accent-secondary);
+            transform: rotate(15deg) scale(1.1);
+        }        
+        /* 스피커 아이콘 변경 */
+        .avatar.bot-avatar:hover .fas.fa-robot::before {
+			content: "\f04b";
+		}        
     </style>
 </head>
 <body>
@@ -460,20 +742,14 @@
         <h1 id="title-home"><i class="fas fa-newspaper"></i> 뉴스 요약 봇</h1>
         <div class="header-right">
             <span id="date-display"></span>
+            <div id="user">
+                <a class="button login-signup-btn" sec:authorize="isAnonymous()" th:href="@{/login_signin}"><strong>로그인/회원가입</strong></a>
+                <a class="button logout-btn" sec:authorize="isAuthenticated()" th:href="@{/logout}"><strong>로그아웃</strong></a>
+            </div>
         </div>
     </header>
     
     <div class="main-container">
-        <div id="category-container" class="category-chips" style="display: none;">
-            <div class="category-chip active" style="--delay: 1;">전체</div>
-            <div class="category-chip" style="--delay: 2;">정치</div>
-            <div class="category-chip" style="--delay: 3;">경제</div>
-            <div class="category-chip" style="--delay: 4;">사회</div>
-            <div class="category-chip" style="--delay: 5;">국제</div>
-            <div class="category-chip" style="--delay: 6;">기술</div>
-            <div class="category-chip" style="--delay: 7;">문화</div>
-        </div>
-        
         <div id="welcome-view" class="welcome-container">
             <div class="welcome-logo">
                 <i class="fas fa-newspaper"></i>
@@ -482,19 +758,63 @@
             <p class="welcome-subtitle">궁금한 뉴스나 주제를 입력하시면 AI가 빠르게 요약해 드립니다.<br>최신 이슈를 간편하게 파악하세요.</p>
             
             <div class="tags-container">
-                <div class="tag" style="--delay: 1;">대선 결과</div>
-                <div class="tag" style="--delay: 2;">최신 경제 동향</div>
-                <div class="tag" style="--delay: 3;">코로나19 현황</div>
-                <div class="tag" style="--delay: 4;">기후 변화</div>
+                <div class="tag" style="--delay: 1;">대선 현황</div>
+                <div class="tag" style="--delay: 2;">오늘의 날씨</div>
+                <div class="tag" style="--delay: 3;">오늘의 추천 코디</div>
+                <div class="tag" style="--delay: 4;">요즘 경제 상황</div>
                 <div class="tag" style="--delay: 5;">테크 트렌드</div>
                 <div class="tag" style="--delay: 6;">글로벌 이슈</div>
+            </div>
+
+            <div class="click-indicator" onclick="setupClickHandling">
+                <p>뉴스 추천 페이지(클릭)</p>
+                <div class="arrow-down">
+                    <i class="fas fa-chevron-down"></i>
+                </div>
             </div>
         </div>
 
         <div id="chat-view" class="chat-container" style="display: none;"></div>
+
+        <div id="news-recommendations" class="news-recommendations" style="display: none;">
+            <h2 class="recommendations-title">오늘의 추천 뉴스</h2>
+            <div class="recommendations-grid">
+                <div class="news-category" data-category="정치">
+                    <h3 class="category-title">정치</h3>
+                    <div class="news-items"></div>
+                </div>
+                <div class="news-category" data-category="경제">
+                    <h3 class="category-title">경제</h3>
+                    <div class="news-items"></div>
+                </div>
+                <div class="news-category" data-category="사회">
+                    <h3 class="category-title">사회</h3>
+                    <div class="news-items"></div>
+                </div>
+                <div class="news-category" data-category="국제">
+                    <h3 class="category-title">국제</h3>
+                    <div class="news-items"></div>
+                </div>
+                <div class="news-category" data-category="기술/IT">
+                    <h3 class="category-title">기술/IT</h3>
+                    <div class="news-items"></div>
+                </div>
+                <div class="news-category" data-category="예술">
+                    <h3 class="category-title">예술</h3>
+                    <div class="news-items"></div>
+                </div>
+            </div>
+        </div>
+
+
         
         <div id="input-container" class="input-container center-input" contenteditable="true">
             <textarea id="articleText" class="articleText" placeholder="뉴스 주제나 URL을 입력하세요..." rows="1"></textarea>
+
+            <button id="mic-button" class="mic-button" onclick="speechToText()">
+            	<i class="fa-solid fa-microphone"></i>
+            </button>
+
             <button id="send-button" class="send-button" onclick="sendArticle()">
                 <i class="fas fa-paper-plane"></i>
             </button>
@@ -508,7 +828,33 @@
             messages: [],
             hasConversationStarted: false
         };
+        //STT 구현
+        function speechToText() {
+            const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+            recognition.lang = 'ko-KR';
+            recognition.onresult = (event) => {
+                const transcript = event.results[0][0].transcript;
+                document.getElementById('articleText').textContent = transcript;
+            };
+            recognition.start();
+        }
 
+        //TTS 구현
+        function textToSpeech(event) {
+            const avatar = event.currentTarget;
+            const messageDiv = avatar.closest('.message.bot-message');
+            if (!messageDiv) return;
+
+            const textDiv = messageDiv.querySelector('.message-content');
+            if (!textDiv) return;
+
+            const textToRead = textDiv.textContent.trim();
+            if(!textToRead) return;
+
+            const utterance = new SpeechSynthesisUtterance(textToRead);
+            utterance.lang = 'ko-KR';
+            speechSynthesis.speak(utterance);
+        }
         // 현재 날짜 표시
         function displayDate() {
             const date = new Date();
@@ -548,13 +894,11 @@
             const chatView = document.getElementById('chat-view');
             const welcomeView = document.getElementById('welcome-view');
             const inputContainer = document.getElementById('input-container');
-            const categoryContainer = document.getElementById('category-container');
             
             // 첫 메시지면 환영 화면 숨기고 채팅 화면 표시
             if (chatView.style.display === 'none') {
                 welcomeView.style.display = 'none';
                 chatView.style.display = 'flex';
-                categoryContainer.style.display = 'flex';
                 inputContainer.classList.remove('center-input');
                 state.hasConversationStarted = true;
             }
@@ -566,6 +910,7 @@
                 const avatar = document.createElement('div');
                 avatar.className = 'avatar bot-avatar';
                 avatar.innerHTML = '<i class="fas fa-robot"></i>';
+                avatar.addEventListener('click', textToSpeech);
                 messageDiv.appendChild(avatar);
             } else if (!isUser && isFollowUp) {
                 messageDiv.style.marginLeft = '52px';
@@ -573,7 +918,14 @@
             
             const messageContent = document.createElement('div');
             messageContent.className = 'message-content';
-            messageContent.textContent = content;
+            
+            if (isUser) {
+				messageContent.textContent = content;
+			} else {
+				// ✅ 마크다운 렌더링 적용
+				messageContent.innerHTML = marked.parse(content);
+			}
+
             messageDiv.appendChild(messageContent);
             
             chatView.appendChild(messageDiv);
@@ -623,35 +975,6 @@
             
             return typingDiv;
         }
-        
-        // 초기 화면으로 돌아가는 함수
-        function resetToWelcomeScreen() {
-            const chatView = document.getElementById('chat-view');
-            const welcomeView = document.getElementById('welcome-view');
-            const inputContainer = document.getElementById('input-container');
-            const categoryContainer = document.getElementById('category-container');
-            
-            // 애니메이션 효과로 전환
-            chatView.style.opacity = 0;
-            
-            setTimeout(() => {
-                // 채팅 화면 숨기고 환영 화면 표시
-                chatView.style.display = 'none';
-                categoryContainer.style.display = 'none';
-                welcomeView.style.display = 'flex';
-                welcomeView.style.opacity = 0;
-                
-                setTimeout(() => {
-                    welcomeView.style.opacity = 1;
-                    inputContainer.classList.add('center-input');
-                    
-                    // 메시지 기록 초기화
-                    chatView.innerHTML = '';
-                    state.messages = [];
-                    state.hasConversationStarted = false;
-                }, 100);
-            }, 300);
-        }
 
         // 태그 클릭 이벤트 처리
         function setupTagEvents() {
@@ -684,9 +1007,26 @@
             setupTagEvents();
             setupCategoryEvents();
             
-            document.getElementById('title-home').addEventListener('click', resetToWelcomeScreen);
-            
+            document.getElementById('title-home').addEventListener('click', function() {
+                location.reload();
+            });
             addCustomStyles();
+            // 뉴스 추천 시스템 초기화
+            initNewsRecommendations();
+
+            const clickIndicator = document.querySelector('.click-indicator');
+            if (clickIndicator) {
+                // 기존 이벤트 리스너 제거 (중복 방지)
+                clickIndicator.removeEventListener('click', handleClickIndicatorClick);
+                // 새 이벤트 리스너 추가
+                clickIndicator.addEventListener('click', handleClickIndicatorClick);
+            }
+
+            // 초기 상태에서 뉴스 추천 섹션은 숨김 상태로 설정
+            const newsRecommendations = document.getElementById('news-recommendations');
+            if (newsRecommendations) {
+                newsRecommendations.style.display = 'none';
+            }
 
             try {
                 const res = await fetch('/api/summaries/history');
@@ -752,16 +1092,13 @@
 
                 conversation.push({ prompt: articleText, response: data.summary });
 
-                let summary = data.summary;
+		        // ✅ 문자열 정리 및 마크다운 파싱
+		        let summary = data.summary || '';
+		        summary = summary.replace(/^"|"$/g, ''); // 양끝 따옴표 제거
+		        const parsed = marked.parse(summary);
 
-                // 따옴표 제거
-                summary = summary.replace(/[""]/g, '');
-
-                // **로 둘러싸인 내용 제거 (** 포함)
-                summary = summary.replace(/\*\*.*?\*\*/g, '');
-
-                // 단락 나누기 (\n\n 기준)
-                const paragraphs = summary.split(/\n+/);
+		        // ✅ 단락 분리 후 메시지로 추가
+		        const paragraphs = parsed.split(/(?:<br\s*\/?>\s*){2,}|<\/h[1-6]>/i);
 
                 paragraphs.forEach((paragraph, index) => {
                     if (paragraph.trim()) {
@@ -782,9 +1119,152 @@
 
         function updateConversation() {
             conversation.forEach(entry => {
-                addMessage(true, entry.prompt);
-                addMessage(false, entry.response);
+                addMessage(true, entry.prompt);		        
+                
+                // ✅ response 문자열 정리 및 마크다운 파싱
+		        let response = entry.response || '';
+		        response = response.replace(/^"|"$/g, '');
+		        const parsed = marked.parse(response);
+
+		        // ✅ 단락 분리 후 메시지로 추가
+		        const paragraphs = parsed.split(/(?:<br\s*\/?>\s*){2,}|<\/h[1-6]>/i);
+		        paragraphs.forEach((html, index) => {
+		            if (html.trim()) {
+		                addMessage(false, html.trim(), index > 0);
+		            }
+		        });
             });
+        }
+
+
+
+
+        // 더미 뉴스 데이터
+        const News = {
+            '정치': [
+                { title: '국회, 새로운 예산안 통과 합의', summary: '여야는 내년도 예산안에 대한 협상을 타결하고 본회의 통과를 앞두고 있습니다.', url: '' },
+                { title: '대통령, 신임 장관 인선 발표', summary: '오늘 청와대에서 새로운 국방부 장관과 외교부 장관 인선이 발표되었습니다.', url: ''  },
+                { title: '야당, 정부 정책 비판 성명 발표', summary: '야당은 최근 정부의 경제 정책에 대한 비판적 입장을 담은 성명을 발표했습니다.', url: ''  }
+            ],
+            '경제': [
+                { title: '한국은행, 기준금리 동결 결정', summary: '한국은행 금융통화위원회는 현재의 기준금리를 유지하기로 결정했습니다.', url: ''  },
+                { title: '주요 기업 실적 전망 상향 조정', summary: '올해 4분기 주요 기업들의 실적 전망이 시장 예상치를 상회할 것으로 전망됩니다.', url: ''  },
+                { title: '원/달러 환율, 3개월 만에 최저치', summary: '원/달러 환율이 글로벌 달러 약세 영향으로 최근 3개월 중 최저치를 기록했습니다.', url: ''  }
+            ],
+            '사회': [
+                { title: '전국 대학 입시 원서 접수 시작', summary: '내년도 대학 입학을 위한 수시모집 원서 접수가 오늘부터 시작되었습니다.', url: ''  },
+                { title: '서울 지하철 무인화 시스템 도입 확대', summary: '서울교통공사는 내년부터 지하철 무인 운영 시스템을 확대 도입할 계획입니다.', url: ''  },
+                { title: '전국 아파트 가격 상승세 둔화', summary: '부동산 통계에 따르면 최근 전국 아파트 가격 상승세가 둔화되고 있는 것으로 나타났습니다.', url: ''  }
+            ],
+            '국제': [
+                { title: '미-중 정상회담 개최 예정', summary: '미국과 중국 정상이 다음 달 아시아 정상회의에서 양자 회담을 가질 예정입니다.', url: ''  },
+                { title: 'EU, 새로운 기후변화 대응책 발표', summary: '유럽연합은 2035년까지의 탄소중립 목표 달성을 위한 새로운 정책을 발표했습니다.', url: ''  },
+                { title: '일본, 경기 회복세 뚜렷', summary: '일본 경제가 코로나19 이후 회복세를 보이며 수출과 내수가 모두 개선되고 있습니다.', url: ''  }
+            ],
+            '기술/IT': [
+                { title: '삼성전자, 차세대 반도체 개발 성공', summary: '삼성전자가 3나노 공정의 차세대 반도체 개발에 성공했다고 발표했습니다.', url: ''  },
+                { title: '인공지능 윤리 가이드라인 발표', summary: '과학기술정보통신부는 인공지능 개발 및 활용을 위한 윤리 가이드라인을 발표했습니다.', url: ''  },
+                { title: '국내 5G 가입자 2000만 돌파', summary: '국내 5G 서비스 가입자가 출시 3년 만에 2000만 명을 돌파했습니다.', url: ''  }
+            ],
+            '예술': [
+                { title: '국립현대미술관, 가을 특별전 개최', summary: '국립현대미술관은 다음 달부터 한국 현대미술 50년을 조망하는 특별전을 개최합니다.', url: ''  },
+                { title: '유명 뮤지컬 레미제라블 내한 공연', summary: '세계적인 뮤지컬 레미제라블이 10년 만에 한국 공연을 개최합니다.', url: ''  },
+                { title: '한국영화 기생충, 해외 영화제 수상', summary: '봉준호 감독의 기생충이 또 다른 해외 영화제에서 수상의 영예를 안았습니다.', url: ''  }
+            ]
+        };
+
+        // 뉴스 추천 섹션 초기화
+        function initNewsRecommendations() {
+            const categories = document.querySelectorAll('.news-category');
+            
+            categories.forEach((category, index) => {
+                category.style.setProperty('--delay', index + 1);
+                const categoryName = category.dataset.category;
+                const newsItems = category.querySelector('.news-items');
+                
+                //뉴스 데이터 추가
+                if (News[categoryName]) {
+                    News[categoryName].forEach(news => {
+                        const newsItem = document.createElement('div');
+                        newsItem.className = 'news-item';
+                        newsItem.innerHTML = `
+                            <div class="news-item-title">${news.title}</div>
+                            <div class="news-item-summary">${news.summary}</div>
+                        `;
+                        
+                        // 뉴스 아이템 클릭 시 해당 뉴스의 url을 입력창에 자동 입력
+                        newsItem.addEventListener('click', () => {
+                            document.getElementById('articleText').value = news.url;
+                            toggleNewsRecommendations(false);
+                            setTimeout(() => {
+                                sendArticle();
+                            }, 300);
+                        });
+                        
+                        newsItems.appendChild(newsItem);
+                    });
+                }
+            });
+        }
+
+        function setupClickHandling() {
+            window.removeEventListener('scroll', handleScroll);
+    
+            const clickIndicator = document.querySelector('.click-indicator');
+            if (clickIndicator) {
+                clickIndicator.removeEventListener('click', handleClickIndicatorClick);
+                clickIndicator.addEventListener('click', handleClickIndicatorClick);
+            }
+        }
+
+        function handleClickIndicatorClick(e) {
+            e.preventDefault(); // 기본 동작 방지
+            e.stopPropagation(); // 이벤트 전파 중지
+    
+            console.log('인디케이터 클릭됨');
+    
+            // 대화가 시작되지 않았을 때만 작동
+            if (!state.hasConversationStarted) {
+                toggleNewsRecommendations(true);
+            }
+    
+            return false; // 추가 전파 방지
+        }
+
+        // 뉴스 추천 화면 토글
+        function toggleNewsRecommendations(show) {
+            const welcomeView = document.getElementById('welcome-view');
+            const newsRecommendations = document.getElementById('news-recommendations');
+            const inputContainer = document.getElementById('input-container');
+            
+            console.log('토글 함수 실행:', show);
+            
+            if (show) {
+                // 환영 화면 숨기기
+                welcomeView.style.opacity = '0';
+                setTimeout(() => {
+                    welcomeView.style.display = 'none';
+                    
+                    // 뉴스 추천 화면 표시
+                    newsRecommendations.style.display = 'block';
+                    
+                    setTimeout(() => {
+                        newsRecommendations.classList.add('visible');
+                    }, 50);
+                }, 300);
+            } else {
+                // 뉴스 추천 화면 숨기기
+                newsRecommendations.classList.remove('visible');
+                setTimeout(() => {
+                    newsRecommendations.style.display = 'none';
+                    
+                    // 환영 화면 표시
+                    welcomeView.style.display = 'flex';
+                    setTimeout(() => {
+                        welcomeView.style.opacity = '1';
+                    }, 50);
+                }, 300);
+            }
         }
     </script>
 </body>
