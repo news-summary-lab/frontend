@@ -616,6 +616,64 @@
             display: none;
         }
          
+        .fixed-welcome-button {
+            position: fixed;
+            top: 10%; /* 최종 위치 */
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1000;
+            padding: 15px 25px;
+            background-color: var(--accent-primary);
+            color: var(--text-primary);
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            font-size: 1.1em;
+            display: flex;
+            align-items: center;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            transition: transform 0.2s ease-in-out, background-color 0.2s ease;
+        }
+
+        .fixed-welcome-button:hover {
+            transform: translateX(-50%) translateY(-3px); /* 호버 시 약간 위로, 중앙 정렬 유지 */
+            background-color: #008cff; /* 호버 시 색상 변경 */
+        }
+
+
+        /* ===== 수정: 애니메이션 정의 (bounceInFromTop 키프레임 대체) ===== */
+
+        /* 버튼 초기 상태 (화면 상단 밖으로 이동) - 기존과 동일 */
+        .fixed-welcome-button.animate-init {
+            top: -100px; /* 화면 상단 밖으로 숨김 */
+            opacity: 0; /* 투명하게 */
+            /* 애니메이션 시작을 위한 transform 초기화 */
+            transform: translateX(-50%) translateY(0);
+        }
+
+        @keyframes bounceInFromTop {
+            0% {
+                top: -100px; /* 시작: 화면 상단 밖 */
+                opacity: 0;
+                transform: translateX(-50%) translateY(0);
+                animation-timing-function: cubic-bezier(0.25, 0.46, 0.45, 0.94); /* 가속 */
+            }
+            20% {
+                top: 12%; /* 빠르게 내려옴 (목표보다 살짝 아래) */
+                opacity: 1;
+                transform: translateX(-50%) translateY(0);
+            }
+            100% {
+                top: 10%; /* 최종 위치 */
+                opacity: 1;
+                transform: translateX(-50%) translateY(0);
+            }
+        }
+
+        /* 애니메이션 적용 클래스 - 기존과 동일 */
+        .fixed-welcome-button.animate-bounce {
+            animation: bounceInFromTop 1.2s forwards; /* 애니메이션 시간 조절 (예: 1.2초) */
+        }
     </style>
 </head>
 <body>
@@ -643,6 +701,12 @@
                 <div class="tag" style="--delay: 4;">기후 변화</div>
                 <div class="tag" style="--delay: 5;">테크 트렌드</div>
                 <div class="tag" style="--delay: 6;">글로벌 이슈</div>
+            </div>
+
+            <div id="welcome-history-button-wrapper" style="display: none;">
+                <button id="welcome-history-button" class="fixed-welcome-button">
+                    <i class="fas fa-history" style="margin-right: 0.5rem;"></i> 과거 대화 기록 보기
+                </button>
             </div>
         </div>
 
@@ -958,6 +1022,42 @@
                     conversation = []; // ✅ conversation 배열도 비워줍니다.
                 }
             }
+            
+            const welcomeHistoryButton = document.getElementById('welcome-history-button');
+            const welcomeHistoryButtonWrapper = document.getElementById('welcome-history-button-wrapper');
+
+            if (loadedHistory.length > 0) {
+                welcomeHistoryButtonWrapper.style.display = 'block'; // 래퍼를 보이게 함
+
+                // 애니메이션 시작을 위해 초기 클래스 추가
+                welcomeHistoryButton.classList.add('animate-init'); // ✅ 추가
+
+                // 딜레이 후 애니메이션 클래스 추가 (튀어 오르는 효과)
+                setTimeout(() => {
+                    welcomeHistoryButton.classList.remove('animate-init'); // ✅ 추가: 초기 상태 클래스 제거
+                    welcomeHistoryButton.classList.add('animate-bounce'); // ✅ 추가: 애니메이션 클래스 추가
+                }, 100); // 100ms 정도 딜레이 후 애니메이션 시작 (옵션, 조절 가능)
+
+
+                welcomeHistoryButton.addEventListener('click', function() {
+                    // welcome-view 숨기고 chat-view 보이기
+                    document.getElementById('welcome-view').style.display = 'none';
+                    document.getElementById('chat-view').style.display = 'flex';
+                    document.getElementById('input-container').classList.remove('center-input');
+                    document.getElementById('input-container').classList.add('chat-active');
+                    state.hasConversationStarted = true;
+
+                    // welcome-history-button-wrapper 숨김 (이제 chat-view로 갔으므로 필요 없음)
+                    welcomeHistoryButtonWrapper.style.display = 'none';
+
+                    // chat-view의 '과거 대화 보기' 버튼 보이게 하고, 바로 히스토리 표시
+                    document.getElementById('history-toggle-button').classList.add('show');
+                    state.historyVisible = false;
+                    toggleHistory(); // 히스토리 보이기
+                });
+            } else {
+                welcomeHistoryButtonWrapper.style.display = 'none';
+            }
 
             updateConversation();
         });
@@ -1065,30 +1165,12 @@
             }
         }
 
-        //DB저장 함수(수정 필요)
-        function saveCurrentSessionToDb() {
-            if (currentSessionHistory.length > 0) {
-                console.log("=== DB로 전송할 현재 세션 기록 ===");
-                console.log(JSON.stringify(currentSessionHistory, null, 2));
-                alert("현재 세션 기록이 콘솔에 출력되었습니다. (실제로는 DB로 전송됩니다)");
-            } else {
-                console.log("저장할 세션 기록이 없습니다.");
-            }
-        }
-
-        // 페이지 종료 시 현재 세션 저장
-        window.addEventListener('beforeunload', function() {
-            saveCurrentSessionToDb();
-        });
 
         function updateConversation() {
             const historyButton = document.getElementById('history-toggle-button');
             const currentChat = document.getElementById('current-chat');
             
             if (loadedHistory.length > 0) {
-                // 과거 대화가 있으면 버튼 표시
-                historyButton.classList.add('show');
-                    
                 loadedHistory.forEach(entry => {
                     addMessage(true, entry.prompt, false, true);		        
                     
