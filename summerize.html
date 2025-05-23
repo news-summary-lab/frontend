@@ -930,6 +930,7 @@
                 if (!res.ok) throw new Error();
                 const json = await res.json();
                 loadedHistory = Array.isArray(json) ? json : [];
+		console.log("받아온 history 데이터:", json);
             } catch (err) {
                 // 비회원일 경우 localStorage에서 로딩
                 const local = localStorage.getItem("guestConversation");
