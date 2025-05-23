@@ -927,17 +927,35 @@
 
             try {
                 const res = await fetch('/api/summaries/history');
-                if (!res.ok) throw new Error();
+                if (!res.ok) throw new Error('User not logged in or API error');
                 const json = await res.json();
                 loadedHistory = Array.isArray(json) ? json : [];
-		console.log("받아온 history 데이터:", json);
+                console.log("받아온 history 데이터:", json);
             } catch (err) {
                 // 비회원일 경우 localStorage에서 로딩
                 const local = localStorage.getItem("guestConversation");
                 if (local) {
-                    loadedHistory = JSON.parse(local);
+                    try {
+                        const parsedLocalData = JSON.parse(local); // localStorage 내용을 파싱
+                        if (Array.isArray(parsedLocalData)) {
+                            loadedHistory = parsedLocalData;
+                            // ✅ 핵심 수정: conversation 배열에도 localStorage에서 불러온 데이터를 할당 (깊은 복사 권장)
+                            conversation = JSON.parse(JSON.stringify(parsedLocalData)); // 또는 [...parsedLocalData] 로 얕은 복사도 가능
+                        } else {
+                            // localStorage에 저장된 데이터가 배열이 아닐 경우 (예: 손상된 데이터)
+                            loadedHistory = [];
+                            conversation = [];
+                        }
+                    } catch (parseError) {
+                        // JSON 파싱 실패 시 (손상된 데이터)
+                        console.error("localStorage 데이터 파싱 오류:", parseError);
+                        loadedHistory = [];
+                        conversation = [];
+                    }
                 } else {
+                    // localStorage에 "guestConversation" 데이터가 없는 경우
                     loadedHistory = [];
+                    conversation = []; // ✅ conversation 배열도 비워줍니다.
                 }
             }
 
