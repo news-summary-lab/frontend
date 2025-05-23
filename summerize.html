@@ -1171,6 +1171,9 @@
             const currentChat = document.getElementById('current-chat');
             
             if (loadedHistory.length > 0) {
+
+                historyButton.classList.add('show');
+                
                 loadedHistory.forEach(entry => {
                     addMessage(true, entry.prompt, false, true);		        
                     
