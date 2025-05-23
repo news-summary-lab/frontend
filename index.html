@@ -1193,14 +1193,20 @@
 
             try {
                 const res = await fetch('/api/summaries/history');
+                if (!res.ok) throw new Error();
                 const json = await res.json();
-                console.log("대화 기록 응답:", json);
                 loadedHistory = Array.isArray(json) ? json : [];
-                updateConversation();
             } catch (err) {
-                console.error("대화 불러오기 실패", err);
+                // 비회원일 경우 localStorage에서 로딩
+                const local = localStorage.getItem("guestConversation");
+                if (local) {
+                    loadedHistory = JSON.parse(local);
+                } else {
+                    loadedHistory = [];
+                }
             }
 
+            updateConversation();
         });
 
         function setupScrollbarEvents() {
@@ -1271,6 +1277,10 @@
 
                 conversation.push({ prompt: articleText, response: data.summary });
 
+                
+                if (!(await isLoggedIn())) {
+                    localStorage.setItem("guestConversation", JSON.stringify(conversation));
+                }
                 // 현재 세션 기록에 추가 (DB 저장용)
                 currentSessionHistory.push({ prompt: articleText, response: data.summary });
                 // 콘솔에 현재 세션 기록 출력
