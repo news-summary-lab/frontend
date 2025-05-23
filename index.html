@@ -1144,11 +1144,11 @@
             messageContent.className = 'message-content';
             
             if (isUser) {
-				messageContent.textContent = content;
-			} else {
-				// ✅ 마크다운 렌더링 적용
-				messageContent.innerHTML = marked.parse(content);
-			}
+		messageContent.textContent = content;
+	    } else {
+		// ✅ 마크다운 렌더링 적용
+		messageContent.innerHTML = marked.parse(content);
+	    }
 
             messageDiv.appendChild(messageContent);
             
@@ -1404,13 +1404,13 @@
                 // 콘솔에 현재 세션 기록 출력
                 console.log("현재 세션 기록:", currentSessionHistory);
 
-		        // ✅ 문자열 정리 및 마크다운 파싱
-		        let summary = data.summary || '';
-		        summary = summary.replace(/^"|"$/g, ''); // 양끝 따옴표 제거
-		        const parsed = marked.parse(summary);
+		// ✅ 문자열 정리 및 마크다운 파싱
+		let summary = data.summary || '';
+		summary = summary.replace(/^"|"$/g, ''); // 양끝 따옴표 제거
+		const parsed = marked.parse(summary);
 
-		        // ✅ 단락 분리 후 메시지로 추가
-		        const paragraphs = parsed.split(/(?:<br\s*\/?>\s*){2,}|<\/h[1-6]>/i);
+		// ✅ 단락 분리 후 메시지로 추가
+		const paragraphs = parsed.split(/(?:<br\s*\/?>\s*){2,}|<\/h[1-6]>/i);
 
                 paragraphs.forEach((paragraph, index) => {
                     if (paragraph.trim()) {
@@ -1430,29 +1430,14 @@
         }
 
 
-        function saveCurrentSessionToDb() {
-            if (currentSessionHistory.length === 0) return;
+        window.addEventListener('beforeunload', () => {
+          try {
+            const blob = new Blob([], { type: 'application/json' });
+            navigator.sendBeacon('/api/summaries/end-session', blob);
+          } catch (err) {
+            console.error('세션 종료 요청 실패:', err);
+          }
 
-            fetch('/api/summaries/save-history', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(currentSessionHistory)
-            }).then(res => {
-                if (!res.ok) throw new Error("서버 응답 오류");
-                console.log("✅ 세션 기록을 DB에 저장 완료");
-            }).catch(err => {
-                console.error("❌ 세션 저장 실패:", err);
-            });
-        }
-
-
-        window.addEventListener('beforeunload', async function (e) {
-            if (await isLoggedIn()) {
-                saveCurrentSessionToDb();
-            }
-        });
 
 
 
