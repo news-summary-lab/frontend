@@ -1006,7 +1006,6 @@
                         console.log("DB 백업 기록:", backupHistory);
                     } else {
                         console.error('DB 백업 기록 가져오기 실패:', backupRes.status);
-                        // 백업 실패 시 오류를 기록하고 계속 진행할 수 있도록 빈 배열 유지
                     }
                 } catch (err) {
                     console.error('DB 백업 기록 API 호출 오류:', err);
@@ -1021,7 +1020,6 @@
                         console.log("Redis 현재 세션 기록:", redisHistory);
                     } else {
                         console.error('Redis 현재 세션 기록 가져오기 실패:', redisRes.status);
-                         // Redis 기록 실패 시 오류를 기록하고 계속 진행할 수 있도록 빈 배열 유지
                     }
                 } catch (err) {
                     console.error('Redis 현재 세션 기록 API 호출 오류:', err);
@@ -1029,9 +1027,8 @@
                 
                 // 3. 두 기록 합치기 (백업이 먼저, Redis 기록이 나중에)
                 // 중복 제거 로직이 필요하다면 여기에 추가 (예: 메시지 ID 또는 타임스탬프 기준)
-                // 현재는 단순 병합
                 loadedHistory = [...backupHistory, ...redisHistory];
-                conversation = JSON.parse(JSON.stringify(loadedHistory)); // 깊은 복사
+                conversation = JSON.parse(JSON.stringify(loadedHistory));
                 console.log("통합된 대화 기록:", loadedHistory);
 
             } else {
@@ -1284,7 +1281,7 @@
                 const res = await fetch('/api/summaries/userinfo');
                 console.log("로그인 상태 확인 응답 코드:", res.status); 
                 return res.ok; // 200이면 로그인 상태, 401이면 비로그인
-            } catch {
+            } catch (err){
             	console.error("로그인 상태 확인 중 오류:", err);
                 return false;
             }
