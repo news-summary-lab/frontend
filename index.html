@@ -81,7 +81,7 @@
             flex-direction: column;
             padding: 1rem;
             width: 100%;
-            max-width: 900px;
+            max-width: 1000px;
             margin: 0 auto;
             height: calc(100vh - 70px);
             position: relative;
@@ -91,7 +91,7 @@
         .chat-container {
             flex: 1;
             overflow-y: auto;
-            padding: 1rem;
+            padding: 1rem 1rem 100px;
             display: flex;
             flex-direction: column;
             scrollbar-width: thin;
@@ -540,11 +540,10 @@
             margin-top: 0 !important;
         }
 
-        /* 5. history-container 스타일 수정 (별도 스크롤 제거) */
         .history-container {
             display: none;
-            max-height: none; /* 최대 높이 제한 제거 */
-            overflow: visible; /* 오버플로우 제거 */
+            max-height: none;
+            overflow: visible;
             transition: opacity 0.3s ease-in-out;
             border-bottom: 1px solid var(--bg-tertiary);
             margin-bottom: 1rem;
@@ -554,11 +553,10 @@
             opacity: 1;
         }
 
-        /* 3. history-toggle-button을 고정으로 변경 */
         .history-toggle-button {
             display: none;
             position: fixed;
-            top: 80px; /* header 높이 아래 */
+            top: 80px;
             left: 50%;
             transform: translateX(-50%);
             background-color: var(--bg-tertiary);
@@ -583,14 +581,13 @@
             display: block;
         }
 
-        /* 7. history-separator 스타일 (동적 생성용) */
         .history-separator {
             text-align: center;
             color: var(--text-tertiary);
             font-size: 0.8rem;
-            margin: 1.5rem 0; /* 마진 증가 */
+            margin: 1.5rem 0;
             position: relative;
-            display: none; /* 기본적으로 숨김 */
+            display: none;
         }
 
         .history-separator::before {
@@ -636,35 +633,30 @@
         }
 
         .fixed-welcome-button:hover {
-            transform: translateX(-50%) translateY(-3px); /* 호버 시 약간 위로, 중앙 정렬 유지 */
-            background-color: #008cff; /* 호버 시 색상 변경 */
+            transform: translateX(-50%) translateY(-3px);
+            background-color: #008cff;
         }
 
-
-        /* ===== 수정: 애니메이션 정의 (bounceInFromTop 키프레임 대체) ===== */
-
-        /* 버튼 초기 상태 (화면 상단 밖으로 이동) - 기존과 동일 */
         .fixed-welcome-button.animate-init {
-            top: -100px; /* 화면 상단 밖으로 숨김 */
-            opacity: 0; /* 투명하게 */
-            /* 애니메이션 시작을 위한 transform 초기화 */
+            top: -100px;
+            opacity: 0;
             transform: translateX(-50%) translateY(0);
         }
 
         @keyframes bounceInFromTop {
             0% {
-                top: -100px; /* 시작: 화면 상단 밖 */
+                top: -100px;
                 opacity: 0;
                 transform: translateX(-50%) translateY(0);
-                animation-timing-function: cubic-bezier(0.25, 0.46, 0.45, 0.94); /* 가속 */
+                animation-timing-function: cubic-bezier(0.25, 0.46, 0.45, 0.94);
             }
             20% {
-                top: 12%; /* 빠르게 내려옴 (목표보다 살짝 아래) */
+                top: 12%;
                 opacity: 1;
                 transform: translateX(-50%) translateY(0);
             }
             100% {
-                top: 10%; /* 최종 위치 */
+                top: 10%;
                 opacity: 1;
                 transform: translateX(-50%) translateY(0);
             }
@@ -672,7 +664,7 @@
 
         /* 애니메이션 적용 클래스 - 기존과 동일 */
         .fixed-welcome-button.animate-bounce {
-            animation: bounceInFromTop 1.2s forwards; /* 애니메이션 시간 조절 (예: 1.2초) */
+            animation: bounceInFromTop 1.2s forwards;
         }
 
         /* 뉴스 추천 섹션 스타일 */
@@ -846,9 +838,9 @@
             color: var(--text-secondary);
             font-size: 0.9rem;
             animation: bounce 2s infinite;
-            cursor: pointer; /* 추가: 포인터 커서 표시 */
-            z-index: 100; /* 추가: 겹침 문제 해결 */
-            padding: 15px; /* 추가: 클릭 영역 확장 */
+            cursor: pointer;
+            z-index: 100;
+            padding: 15px;
         }
 
         .arrow-down {
@@ -1425,13 +1417,13 @@
                     localStorage.setItem("guestConversation", JSON.stringify(conversation));
                 }
 
-		        // ✅ 문자열 정리 및 마크다운 파싱
-		        let summary = data.summary || '';
-		        summary = summary.replace(/^"|"$/g, ''); // 양끝 따옴표 제거
-		        const parsed = marked.parse(summary);
+		// ✅ 문자열 정리 및 마크다운 파싱
+		let summary = data.summary || '';
+		summary = summary.replace(/^"|"$/g, ''); // 양끝 따옴표 제거
+		const parsed = marked.parse(summary);
 
-		        // ✅ 단락 분리 후 메시지로 추가
-		        const paragraphs = parsed.split(/(?:<br\s*\/?>\s*){2,}|<\/h[1-6]>/i);
+		// ✅ 단락 분리 후 메시지로 추가
+		const paragraphs = parsed.split(/(?:<br\s*\/?>\s*){2,}|<\/h[1-6]>/i);
 
                 paragraphs.forEach((paragraph, index) => {
                     if (paragraph.trim()) {
