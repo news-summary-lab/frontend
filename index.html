@@ -1000,31 +1000,67 @@
             recognition.start();
         }
 
-        //TTS 구현
+	// TTS 구현
         function textToSpeech(event) {
-            const avatar = event.currentTarget;
-            const messageDiv = avatar.closest('.message.bot-message');
-            if (!messageDiv) return;
+            const avatar = event.currentTarget; // 클릭된 아바타 요소
+            let currentMessageBlock = avatar.closest('.message.bot-message'); // 아바타가 속한 메시지 블록
+            if (!currentMessageBlock) return;
 
-            const textDiv = messageDiv.querySelectorAll('.message-content');
-            if (!textDiv) return;
+            // 1. TTS 음성 중단 기능: 이미 음성이 재생 중이면 중단합니다.
+            if (speechSynthesis.speaking) { // 현재 TTS가 말하는 중인지 확인
+                speechSynthesis.cancel();    // 재생 중인 음성 취소
+                return;                      // 함수 종료
+            }
 
-            const texts = [];
-            textDiv.forEach(block => {
-                texts.push(block.textContent.trim());
-            });
+            const textsToSpeak = []; // 말할 텍스트들을 담을 배열
 
-            const fullText = texts.join('. ');
-            if(!fullText) return;
+            // 현재 메시지 블록(아바타가 있는 블록)에서 텍스트 추출하는 내부 함수
+            const extractTextFromThisBlock = (block) => {
+                const contentElements = block.querySelectorAll('.message-content');
+                contentElements.forEach(contentEl => {
+                    const text = contentEl.textContent.trim();
+                    if (text) {
+                        textsToSpeak.push(text);
+                    }
+                });
+            };
 
-            const cleanText = fullText.replace(/[^\p{L}\p{N}\s.,?!]/gu, '');
-            if (!cleanText) return;
+            extractTextFromThisBlock(currentMessageBlock); // 첫 블록 텍스트 추출
 
-            console.log(cleanText);
-            const utterance = new SpeechSynthesisUtterance(cleanText);
-            utterance.lang = 'ko-KR';
-            speechSynthesis.cancel();
-            speechSynthesis.speak(utterance);
+            // 2. 전체 요약 읽기: 후속 메시지 블록에서 텍스트 수집
+            let nextBlock = currentMessageBlock.nextElementSibling;
+            while (nextBlock) { // 다음 요소가 있는 동안 반복
+                // 다음 블록이 이어지는 봇 메시지인지 확인
+                if (nextBlock.classList.contains('bot-message') &&
+                    (nextBlock.style.marginLeft === '52px' || !nextBlock.querySelector('.avatar.bot-avatar'))) {
+                    extractTextFromThisBlock(nextBlock); // 후속 블록 텍스트 추출
+                } else {
+                    // 사용자 메시지이거나 새로운 봇 메시지(아바타가 있는)이면 중단
+                    break;
+                }
+                nextBlock = nextBlock.nextElementSibling; // 그 다음 형제 요소로 이동
+            }
+
+            const fullText = textsToSpeak.join(' '); // 모든 텍스트 조각을 공백으로 연결
+
+            if (!fullText) {
+                console.log("TTS: 읽을 텍스트가 없습니다.");
+                return;
+            }
+
+            // 기존의 텍스트 정리 및 음성 출력 로직
+            const cleanText = fullText.replace(/[^\p{L}\p{N}\s.,?!]/gu, ''); // 특수문자 등 정리
+            if (!cleanText) {
+                console.log("TTS: 정리 후 텍스트가 비어있습니다.");
+                return;
+            }
+
+            console.log("TTS: 재생할 텍스트:", cleanText);
+            const utterance = new SpeechSynthesisUtterance(cleanText); // 음성 객체 생성
+            utterance.lang = 'ko-KR'; // 한국어 설정
+
+            speechSynthesis.cancel(); // 만약을 위해 이전 음성 취소
+            speechSynthesis.speak(utterance); // 음성 재생 시작
         }
         
 
