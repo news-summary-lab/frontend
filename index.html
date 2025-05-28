@@ -987,7 +987,7 @@
             recognition.lang = 'ko-KR';
             recognition.onresult = (event) => {
                 const transcript = event.results[0][0].transcript;
-                document.getElementById('articleText').textContent = transcript;
+                document.getElementById('articleText').value = transcript;
             };
             recognition.start();
         }
@@ -1049,9 +1049,9 @@
 
             console.log("TTS: 재생할 텍스트:", cleanText);
             const utterance = new SpeechSynthesisUtterance(cleanText); // 음성 객체 생성
-            utterance.lang = 'ko-KR'; // 한국어 설정
+            utterance.lang = 'ko-KR';
 
-            speechSynthesis.cancel(); // 만약을 위해 이전 음성 취소
+            speechSynthesis.cancel();
             speechSynthesis.speak(utterance); // 음성 재생 시작
         }
         
