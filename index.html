@@ -877,6 +877,39 @@
                 min-height: 250px;
             }
         }
+
+
+	.button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            color: var(--text-primary);
+            background-color: var(--bg-tertiary);
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+        }
+
+        .login-signup-btn {
+            background-color: #1880bd;
+            color: #000;
+        }
+
+        .login-signup-btn:hover {
+            filter: brightness(1.1);
+            transform: scale(1.05);
+        }
+
+        .logout-btn {
+            background-color: #b42f2d;
+        }
+
+        .logout-btn:hover {
+            background-color: #c53030;
+            transform: scale(1.05);
+        }
     </style>
 </head>
 <body>
@@ -884,8 +917,8 @@
         <h1 id="title-home"><i class="fas fa-newspaper"></i> 뉴스 요약 봇</h1>
         <div class="header-right">
             <span id="date-display"></span>
-            <a sec:authorize="isAnonymous()" th:href="@{/login_signin}">로그인/회원가입</a>
-            <a sec:authorize="isAuthenticated()" th:href="@{/logout}">로그아웃</a>
+                <a class="button login-signup-btn" sec:authorize="isAnonymous()" th:href="@{/login_signin}"><strong>로그인/회원가입</strong></a>
+                <a class="button logout-btn" sec:authorize="isAuthenticated()" th:href="@{/logout}"><strong>로그아웃</strong></a>
         </div>
     </header>
     
