@@ -910,17 +910,13 @@
             background-color: #c53030;
             transform: scale(1.05);
         }
-
-	#date-display{
-		margin-right: 10px;
-	}
     </style>
 </head>
 <body>
     <header class="header">
         <h1 id="title-home"><i class="fas fa-newspaper"></i> 뉴스 요약 봇</h1>
         <div class="header-right">
-            <span id="date-display"></span>
+            <span id="date-display" style="margin-right: 10px"></span>
             <div id="user">
                 <a class="button login-signup-btn" sec:authorize="isAnonymous()" th:href="@{/login_signin}"><strong>로그인/회원가입</strong></a>
                 <a class="button logout-btn" sec:authorize="isAuthenticated()" th:href="@{/logout}"><strong>로그아웃</strong></a>
